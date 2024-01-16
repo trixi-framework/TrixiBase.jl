@@ -48,7 +48,7 @@ end
 makedocs(
     # Specify modules for which docstrings should be shown
     modules = [TrixiBase],
-    # Set sitename to Trixi.jl
+    # Set sitename to TrixiBase.jl
     sitename="TrixiBase.jl",
     # Provide additional formatting options
     format = Documenter.HTML(
