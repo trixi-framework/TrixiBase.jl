@@ -102,8 +102,6 @@ end
 walkexpr(f, expr::Expr) = f(Expr(expr.head, (walkexpr(f, arg) for arg in expr.args)...))
 walkexpr(f, x) = f(x)
 
-
-
 # Replace assignments to `key` in `expr` by `key = val` for all `(key,val)` in `kwargs`.
 function replace_assignments(expr; kwargs...)
     # replace explicit and keyword assignments

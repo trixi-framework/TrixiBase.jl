@@ -4,7 +4,8 @@ using Documenter
 trixibase_root_dir = dirname(@__DIR__)
 
 # Fix for https://github.com/trixi-framework/Trixi.jl/issues/668
-if (get(ENV, "CI", nothing) != "true") && (get(ENV, "TRIXIBASE_DOC_DEFAULT_ENVIRONMENT", nothing) != "true")
+if (get(ENV, "CI", nothing) != "true") &&
+   (get(ENV, "TRIXIBASE_DOC_DEFAULT_ENVIRONMENT", nothing) != "true")
     push!(LOAD_PATH, trixibase_root_dir)
 end
 
@@ -36,26 +37,22 @@ copy_file("LICENSE.md",
           "\n" => "\n> ", r"^" => "# License\n\n> ")
 
 # Make documentation
-makedocs(
-    sitename="TrixiBase.jl",
-    # Provide additional formatting options
-    format = Documenter.HTML(
-        # Disable pretty URLs during manual testing
-        prettyurls = get(ENV, "CI", nothing) == "true",
-        # Set canonical URL to GitHub pages URL
-        canonical = "https://trixi-framework.github.io/TrixiBase.jl/stable"
-    ),
-    # Explicitly specify documentation structure
-    pages = [
-        "Home" => "index.md",
-        "API reference" => "reference.md",
-        "Authors" => "authors.md",
-        "License" => "license.md"
-    ],
-)
+makedocs(sitename="TrixiBase.jl",
+         # Provide additional formatting options
+         format=Documenter.HTML(
+                                # Disable pretty URLs during manual testing
+                                prettyurls=get(ENV, "CI", nothing) == "true",
+                                # Set canonical URL to GitHub pages URL
+                                canonical="https://trixi-framework.github.io/TrixiBase.jl/stable"),
+         # Explicitly specify documentation structure
+         pages=[
+             "Home" => "index.md",
+             "API reference" => "reference.md",
+             "Authors" => "authors.md",
+             "License" => "license.md",
+         ])
 
 deploydocs(;
-    repo = "github.com/trixi-framework/TrixiBase.jl",
-    devbranch = "main",
-    push_preview = true
-)
+           repo="github.com/trixi-framework/TrixiBase.jl",
+           devbranch="main",
+           push_preview=true)

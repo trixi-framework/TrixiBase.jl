@@ -16,14 +16,14 @@
             @test @isdefined x
             @test x == 4
 
-            @test_nowarn trixi_include(@__MODULE__, filename, x = 7)
+            @test_nowarn trixi_include(@__MODULE__, filename, x=7)
             @test x == 7
 
             @test_throws "assignment `y` not found in expression" trixi_include(@__MODULE__,
                                                                                 filename,
-                                                                                y = 3)
+                                                                                y=3)
         finally
-            rm(filename, force = true)
+            rm(filename, force=true)
         end
     end
 
@@ -48,9 +48,9 @@
 
             @test_throws "no method matching solve(; maxiters::Int64)" trixi_include(@__MODULE__,
                                                                                      filename,
-                                                                                     maxiters = 3)
+                                                                                     maxiters=3)
         finally
-            rm(filename, force = true)
+            rm(filename, force=true)
         end
     end
 
@@ -85,12 +85,12 @@
             @test x == 10^5
 
             @test_nowarn trixi_include(@__MODULE__, filename2,
-                                                       maxiters = 7)
+                                       maxiters=7)
             # Test that `maxiters` got overwritten
             @test x == 7
         finally
-            rm(filename1, force = true)
-            rm(filename2, force = true)
+            rm(filename1, force=true)
+            rm(filename2, force=true)
         end
     end
 end
