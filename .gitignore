@@ -1,15 +1,14 @@
-**/Manifest.toml
+Manifest.toml
 docs/build
 docs/src/authors.md
+docs/src/license.md
 public/
 coverage/
 coverage_report/
-**/*.jl.*.cov
+*.jl.*.cov
 .vscode/
+run
 
 .DS_Store
-
-run
-run/*
 
 LocalPreferences.toml

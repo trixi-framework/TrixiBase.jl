@@ -8,47 +8,33 @@ if (get(ENV, "CI", nothing) != "true") && (get(ENV, "TRIXIBASE_DOC_DEFAULT_ENVIR
     push!(LOAD_PATH, trixibase_root_dir)
 end
 
-using TrixiBase 
+using TrixiBase
 
 # Define module-wide setups such that the respective modules are available in doctests
 DocMeta.setdocmeta!(TrixiBase, :DocTestSetup, :(using TrixiBase); recursive=true)
 
-# Copy some files from the top level directory to the docs and modify them
-# as necessary
-open(joinpath(@__DIR__, "src", "index.md"), "w") do io
-    # Point to source file
-    println(io, """
+# Copy files to not need to synchronize them manually
+function copy_file(filename, replaces...)
+    content = read(joinpath(trixiparticles_root_dir, filename), String)
+    content = replace(content, replaces...)
+
+    header = """
     ```@meta
-    EditURL = "https://github.com/trixi-framework/TrixiBase.jl/blob/main/README.md"
+    EditURL = "https://github.com/trixi-framework/TrixiBase.jl/blob/main/$filename"
     ```
-    """)
-    # Write the modified contents
-    for line in eachline(joinpath(trixibase_root_dir, "README.md"))
-        line = replace(line, "[LICENSE.md](LICENSE.md)" => "[License](@ref)")
-        println(io, line)
-    end
+    """
+    content = header * content
+
+    write(joinpath(@__DIR__, "src", lowercase(filename)), content)
 end
 
-# open(joinpath(@__DIR__, "src", "license.md"), "w") do io
-#     # Point to source file
-#     println(io, """
-#     ```@meta
-#     EditURL = "https://github.com/trixi-framework/TrixiBase.jl/blob/main/LICENSE.md"
-#     ```
-#     """)
-#     # Write the modified contents
-#     println(io, "# License")
-#     println(io, "")
-#     for line in eachline(joinpath(trixibase_root_dir, "LICENSE.md"))
-#         println(io, "> ", line)
-#     end
-# end
+# Add section `# License` and add `>` in each line to add a quote
+copy_file("LICENSE.md",
+          "[AUTHORS.md](AUTHORS.md)" => "[Authors](@ref)",
+          "\n" => "\n> ", r"^" => "# License\n\n> ")
 
 # Make documentation
 makedocs(
-    # Specify modules for which docstrings should be shown
-    modules = [TrixiBase],
-    # Set sitename to TrixiBase.jl
     sitename="TrixiBase.jl",
     # Provide additional formatting options
     format = Documenter.HTML(
@@ -61,10 +47,9 @@ makedocs(
     pages = [
         "Home" => "index.md",
         "API reference" => "reference.md",
-        # "License" => "license.md"
+        "License" => "license.md"
     ],
 )
-
 
 deploydocs(;
     repo = "github.com/trixi-framework/TrixiBase.jl",
