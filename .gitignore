@@ -1,0 +1,15 @@
+**/Manifest.toml
+docs/build
+docs/src/authors.md
+public/
+coverage/
+coverage_report/
+**/*.jl.*.cov
+.vscode/
+
+.DS_Store
+
+run
+run/*
+
+LocalPreferences.toml
