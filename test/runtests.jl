@@ -1,6 +1,5 @@
-using Test
+include("test_util.jl")
 
-@time @testset verbose=true showtiming=true "TrixiBase.jl tests" begin
-    include("test_dummy.jl")
+@testset verbose=true "TrixiBase.jl Tests" begin
+    include("trixi_include.jl")
 end
-

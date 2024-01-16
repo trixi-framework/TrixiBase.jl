@@ -1,10 +1,7 @@
 module TrixiBase
 
-"""
-    greet()
+include("trixi_include.jl")
 
-Please, welcome everyone!
-"""
-greet() = print("Hello World!")
+export trixi_include
 
 end # module TrixiBase
