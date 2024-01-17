@@ -38,11 +38,7 @@ function trixi_include(mod::Module, elixir::AbstractString; kwargs...)
         # This will throw an error when `key` is not found
         find_assignment(expr, key)
     end
-
-    # Print information on potential wait time only in non-parallel case
-    # if !mpi_isparallel()
-    #     @info "You just called `trixi_include`. Julia may now compile the code, please be patient."
-    # end
+    
     Base.include(ex -> replace_assignments(insert_maxiters(ex); kwargs...), mod, elixir)
 end
 
