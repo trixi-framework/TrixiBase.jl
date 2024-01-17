@@ -42,7 +42,7 @@ jobs:
         version:
           - '1.8'
           - '1.9'
-          - 'latest'
+          - '1'
         os:
           - ubuntu-latest
           - macOS-latest
