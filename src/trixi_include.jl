@@ -38,7 +38,7 @@ function trixi_include(mod::Module, elixir::AbstractString; kwargs...)
         # This will throw an error when `key` is not found
         find_assignment(expr, key)
     end
-    
+
     Base.include(ex -> replace_assignments(insert_maxiters(ex); kwargs...), mod, elixir)
 end
 
