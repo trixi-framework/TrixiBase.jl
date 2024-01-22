@@ -44,11 +44,11 @@
             # Use `@trixi_testset`, which wraps code in a temporary module, and call
             # `trixi_include` with `@__MODULE__` in order to isolate this test.
             @test_throws "no method matching solve(; maxiters" trixi_include(@__MODULE__,
-                                                                              filename)
+                                                                             filename)
 
             @test_throws "no method matching solve(; maxiters" trixi_include(@__MODULE__,
-                                                                              filename,
-                                                                              maxiters=3)
+                                                                             filename,
+                                                                             maxiters=3)
         finally
             rm(filename, force=true)
         end
