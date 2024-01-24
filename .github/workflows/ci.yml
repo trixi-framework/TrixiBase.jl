@@ -58,9 +58,16 @@ jobs:
       - uses: julia-actions/cache@v1
       - name: Apply JuliaFormatter and check format
         run: |
-          julia -e "using Pkg; Pkg.add(\"JuliaFormatter\")"
-          julia -e 'using JuliaFormatter; !format(".", verbose=true) &&
-            error("Code not properly formatted")'
+          using Pkg
+          Pkg.add("JuliaFormatter")
+
+          using JuliaFormatter
+
+          is_unchanged = format(".", verbose=true)
+          if !is_unchanged
+            error("Code not properly formatted")
+          end
+        shell: julia --color=yes {0}
       - name: Build package
         uses: julia-actions/julia-buildpkg@v1
       - name: Run tests
