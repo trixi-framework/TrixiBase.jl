@@ -10,7 +10,7 @@ import TrixiBase
 
 # This is a really working version - assuming the same
 # communication pattern etc. used in Trixi.jl.
-function TrixiBase.mpi_isparallel()
+function TrixiBase.mpi_isparallel(::Val{:MPIExt})
     if MPI.Initialized()
         return MPI.Comm_size(MPI.COMM_WORLD) > 1
     else
