@@ -19,6 +19,10 @@
             @test_nowarn trixi_include(@__MODULE__, filename, x=7)
             @test x == 7
 
+            # Verify default version (that includes in `Main`)
+            @test_nowarn trixi_include(filename, x = 11)
+            @test Main.x == 11
+
             @test_throws "assignment `y` not found in expression" trixi_include(@__MODULE__,
                                                                                 filename,
                                                                                 y=3)
@@ -84,10 +88,17 @@
             # This is the default `maxiters` inserted by `trixi_include`
             @test x == 10^5
 
+            # Non-semicolon version
             @test_nowarn trixi_include(@__MODULE__, filename2,
                                        maxiters=7)
             # Test that `maxiters` got overwritten
             @test x == 7
+
+            # Semicolon version
+            @test_nowarn trixi_include(@__MODULE__, filename2;
+                                       maxiters=11)
+            # Test that `maxiters` got overwritten
+            @test x == 11
         finally
             rm(filename1, force=true)
             rm(filename2, force=true)
