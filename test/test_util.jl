@@ -33,8 +33,6 @@ macro trixi_testset(name, expr)
     end
 end
 
-
-
 """
     @test_nowarn_mod expr
 
@@ -42,7 +40,7 @@ Modified version of `@test_nowarn expr` that prints the content of `stderr` when
 it is not empty and ignores some common info statements printed in Trixi.jl
 uses.
 """
-macro test_nowarn_mod(expr, additional_ignore_content = String[])
+macro test_nowarn_mod(expr, additional_ignore_content=String[])
     quote
         let fname = tempname()
             try
@@ -59,8 +57,7 @@ macro test_nowarn_mod(expr, additional_ignore_content = String[])
                 # Patterns matching the following ones will be ignored. Additional patterns
                 # passed as arguments can also be regular expressions, so we just use the
                 # type `Any` for `ignore_content`.
-                ignore_content = Any[# We ignore our own compilation messages
-                                     "[ Info: You just called `trixi_include`. Julia may now compile the code, please be patient.\n",]
+                ignore_content = Any["[ Info: You just called `trixi_include`. Julia may now compile the code, please be patient.\n"]
                 append!(ignore_content, $additional_ignore_content)
                 for pattern in ignore_content
                     stderr_content = replace(stderr_content, pattern => "")
@@ -72,7 +69,7 @@ macro test_nowarn_mod(expr, additional_ignore_content = String[])
                 @test occursin(r"^(WARNING: replacing module .+\.\n)*$", stderr_content)
                 ret
             finally
-                rm(fname, force = true)
+                rm(fname, force=true)
             end
         end
     end
