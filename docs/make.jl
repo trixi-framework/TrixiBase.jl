@@ -47,7 +47,7 @@ makedocs(sitename="TrixiBase.jl",
                                 canonical="https://trixi-framework.github.io/TrixiBase.jl/stable"),
          # Explicitly specify documentation structure
          pages=[
-             "Home" => "readme.md",
+             "Home" => "index.md",
              "API reference" => "reference.md",
              "Authors" => "authors.md",
              "License" => "license.md",
