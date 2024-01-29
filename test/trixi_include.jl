@@ -12,11 +12,11 @@
 
             # Use `@trixi_testset`, which wraps code in a temporary module, and call
             # `trixi_include` with `@__MODULE__` in order to isolate this test.
-            @test_nowarn trixi_include(@__MODULE__, filename)
+            @test_nowarn_mod trixi_include(@__MODULE__, filename)
             @test @isdefined x
             @test x == 4
 
-            @test_nowarn trixi_include(@__MODULE__, filename, x=7)
+            @test_nowarn_mod trixi_include(@__MODULE__, filename, x=7)
             @test x == 7
 
             @test_throws "assignment `y` not found in expression" trixi_include(@__MODULE__,
@@ -79,13 +79,13 @@
             # Use `@trixi_testset`, which wraps code in a temporary module, and call
             # `Base.include` and `trixi_include` with `@__MODULE__` in order to isolate this test.
             Base.include(@__MODULE__, filename1)
-            @test_nowarn trixi_include(@__MODULE__, filename2)
+            @test_nowarn_mod trixi_include(@__MODULE__, filename2)
             @test @isdefined x
             # This is the default `maxiters` inserted by `trixi_include`
             @test x == 10^5
 
-            @test_nowarn trixi_include(@__MODULE__, filename2,
-                                       maxiters=7)
+            @test_nowarn_mod trixi_include(@__MODULE__, filename2,
+                                           maxiters=7)
             # Test that `maxiters` got overwritten
             @test x == 7
         finally
