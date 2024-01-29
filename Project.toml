@@ -1,0 +1,4 @@
+name = "TrixiBase"
+uuid = "9a0f1c46-06d5-4909-a5a3-ce25d3fa3284"
+authors = ["Michael Schlottke-Lakemper <michael@sloede.com>"]
+version = "0.1.0"
