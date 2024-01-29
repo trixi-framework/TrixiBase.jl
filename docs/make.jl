@@ -15,7 +15,7 @@ using TrixiBase
 DocMeta.setdocmeta!(TrixiBase, :DocTestSetup, :(using TrixiBase); recursive=true)
 
 # Copy files to not need to synchronize them manually
-function copy_file(filename, replaces...)
+function copy_file(filename, replaces...; new_filename=lowercase(filename))
     content = read(joinpath(trixibase_root_dir, filename), String)
     content = replace(content, replaces...)
 
@@ -26,10 +26,10 @@ function copy_file(filename, replaces...)
     """
     content = header * content
 
-    write(joinpath(@__DIR__, "src", lowercase(filename)), content)
+    write(joinpath(@__DIR__, "src", new_filename), content)
 end
 
-copy_file("README.md")
+copy_file("README.md", new_filename="index.md")
 copy_file("AUTHORS.md",
           "in the [LICENSE.md](LICENSE.md) file" => "under [License](@ref)")
 # Add section `# License` and add `>` in each line to add a quote
