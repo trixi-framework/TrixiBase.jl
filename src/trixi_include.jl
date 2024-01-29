@@ -1,6 +1,6 @@
-# Note: We can't call the method below `Trixi.include` since that is created automatically
-# inside `module Trixi` to `include` source files and evaluate them within the global scope
-# of `Trixi`. However, users will want to evaluate in the global scope of `Main` or something
+# Note: We can't call the method below `TrixiBase.include` since that is created automatically
+# inside `module TrixiBase` to `include` source files and evaluate them within the global scope
+# of `TrixiBase`. However, users will want to evaluate in the global scope of `Main` or something
 # similar to manage dependencies on their own.
 """
     trixi_include([mod::Module=Main,] elixir::AbstractString; kwargs...)
