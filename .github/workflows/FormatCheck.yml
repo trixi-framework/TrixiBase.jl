@@ -18,15 +18,11 @@ jobs:
       - uses: julia-actions/setup-julia@latest
         with:
           version: ${{ matrix.julia-version }}
-
       - uses: actions/checkout@v4
       - name: Install JuliaFormatter and format
         # This will use the latest version by default but you can set the version like so:
         #
         # julia  -e 'using Pkg; Pkg.add(PackageSpec(name = "JuliaFormatter", version = "0.13.0"))'
-        #
-        # TODO: Change the call below to
-        #       format(".")
         run: |
           julia  -e 'using Pkg; Pkg.add(PackageSpec(name = "JuliaFormatter"))'
           julia  -e 'using JuliaFormatter; format(".")'
