@@ -40,7 +40,7 @@ function trixi_include(mod::Module, elixir::AbstractString; kwargs...)
     end
 
     # Print information on potential wait time only in non-parallel case
-    if !mpi_isparallel(Val(:MPIExt))
+    if !mpi_isparallel(Val{:MPIExt}())
         @info "You just called `trixi_include`. Julia may now compile the code, please be patient."
     end
     Base.include(ex -> replace_assignments(insert_maxiters(ex); kwargs...), mod, elixir)

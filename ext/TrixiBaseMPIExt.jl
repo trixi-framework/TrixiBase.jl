@@ -1,6 +1,5 @@
 # Package extension for adding MPI-based features to TrixiBase.jl
 module TrixiBaseMPIExt
-__precompile__(false)
 
 # Load package extension code on Julia v1.9 and newer
 if isdefined(Base, :get_extension)
