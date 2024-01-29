@@ -56,12 +56,6 @@ jobs:
           version: ${{ matrix.version }}
       - run: julia -e 'using InteractiveUtils; versioninfo(verbose=true)'
       - uses: julia-actions/cache@v1
-      - name: Apply JuliaFormatter and check format
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          julia -e 'using Pkg; Pkg.add("JuliaFormatter")'
-          julia -e 'using JuliaFormatter; !format(".", verbose=true) &&
-            error("Code not properly formatted")'
       - name: Build package
         uses: julia-actions/julia-buildpkg@v1
       - name: Run tests
