@@ -20,7 +20,7 @@
             @test x == 7
 
             # Verify default version (that includes in `Main`)
-            @test_nowarn trixi_include(filename, x = 11)
+            @test_nowarn trixi_include(filename, x=11)
             @test Main.x == 11
 
             @test_throws "assignment `y` not found in expression" trixi_include(@__MODULE__,
