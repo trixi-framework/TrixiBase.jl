@@ -7,7 +7,7 @@
 
 `include` the file `elixir` and evaluate its content in the global scope of module `mod`.
 You can override specific assignments in `elixir` by supplying keyword arguments.
-It's basic purpose is to make it easier to modify some parameters while running Trixi.jl from the
+Its basic purpose is to make it easier to modify some parameters while running simulations from the
 REPL. Additionally, this is used in tests to reduce the computational burden for CI while still
 providing examples with sensible default values for users.
 
