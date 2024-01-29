@@ -29,6 +29,7 @@ function copy_file(filename, replaces...)
     write(joinpath(@__DIR__, "src", lowercase(filename)), content)
 end
 
+copy_file("README.md")
 copy_file("AUTHORS.md",
           "in the [LICENSE.md](LICENSE.md) file" => "under [License](@ref)")
 # Add section `# License` and add `>` in each line to add a quote
