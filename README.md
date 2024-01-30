@@ -7,5 +7,6 @@
 [![Codecov](https://codecov.io/gh/trixi-framework/TrixiBase.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/trixi-framework/TrixiBase.jl)
 [![License: MIT](https://img.shields.io/badge/License-MIT-success.svg)](https://opensource.org/license/mit/)
 
-TrixiBase.jl provides common functionality used by multiple Julia packages in the
+[TrixiBase.jl](https://github.com/trixi-framework/TrixiBase.jl) 
+provides common functionality used by multiple Julia packages in the
 [Trixi Framework](https://github.com/trixi-framework).
