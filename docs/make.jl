@@ -12,10 +12,10 @@ end
 using TrixiBase
 
 # Define module-wide setups such that the respective modules are available in doctests
-DocMeta.setdocmeta!(TrixiBase, :DocTestSetup, :(using TrixiBase); recursive=true)
+DocMeta.setdocmeta!(TrixiBase, :DocTestSetup, :(using TrixiBase); recursive = true)
 
 # Copy files to not need to synchronize them manually
-function copy_file(filename, replaces...; new_filename=lowercase(filename))
+function copy_file(filename, replaces...; new_filename = lowercase(filename))
     content = read(joinpath(trixibase_root_dir, filename), String)
     content = replace(content, replaces...)
 
@@ -29,7 +29,7 @@ function copy_file(filename, replaces...; new_filename=lowercase(filename))
     write(joinpath(@__DIR__, "src", new_filename), content)
 end
 
-copy_file("README.md", new_filename="index.md")
+copy_file("README.md", new_filename = "index.md")
 copy_file("AUTHORS.md",
           "in the [LICENSE.md](LICENSE.md) file" => "under [License](@ref)")
 # Add section `# License` and add `>` in each line to add a quote
@@ -38,15 +38,15 @@ copy_file("LICENSE.md",
           "\n" => "\n> ", r"^" => "# License\n\n> ")
 
 # Make documentation
-makedocs(sitename="TrixiBase.jl",
+makedocs(sitename = "TrixiBase.jl",
          # Provide additional formatting options
-         format=Documenter.HTML(
-                                # Disable pretty URLs during manual testing
-                                prettyurls=get(ENV, "CI", nothing) == "true",
-                                # Set canonical URL to GitHub pages URL
-                                canonical="https://trixi-framework.github.io/TrixiBase.jl/stable"),
+         format = Documenter.HTML(
+                                  # Disable pretty URLs during manual testing
+                                  prettyurls = get(ENV, "CI", nothing) == "true",
+                                  # Set canonical URL to GitHub pages URL
+                                  canonical = "https://trixi-framework.github.io/TrixiBase.jl/stable"),
          # Explicitly specify documentation structure
-         pages=[
+         pages = [
              "Home" => "index.md",
              "API reference" => "reference.md",
              "Authors" => "authors.md",
@@ -54,6 +54,6 @@ makedocs(sitename="TrixiBase.jl",
          ])
 
 deploydocs(;
-           repo="github.com/trixi-framework/TrixiBase.jl",
-           devbranch="main",
-           push_preview=true)
+           repo = "github.com/trixi-framework/TrixiBase.jl",
+           devbranch = "main",
+           push_preview = true)
