@@ -21,7 +21,7 @@
             @test x == 7
 
             # Verify default version (that includes in `Main`)
-            @test_nowarn trixi_include(filename, x = 11)
+            @test_nowarn_mod trixi_include(filename, x = 11)
             @test Main.x == 11
 
             @test_throws "assignment `y` not found in expression" trixi_include(@__MODULE__,
@@ -107,17 +107,17 @@
             # This is the default `maxiters` inserted by `trixi_include`
             @test x == 10^5
 
-            @test_nowarn trixi_include(@__MODULE__, filename2,
-                                       maxiters = 7)
+            @test_nowarn_mod trixi_include(@__MODULE__, filename2,
+                                           maxiters = 7)
             # Test that `maxiters` got overwritten
             @test x == 7
 
             # Verify that adding `maxiters` to `maxiters` results in exactly one of them
             # case 1) `maxiters` is *before* semicolon in included file
-            @test_nowarn trixi_include(@__MODULE__, filename3, maxiters = 11)
+            @test_nowarn_mod trixi_include(@__MODULE__, filename3, maxiters = 11)
             @test y == 11
             # case 2) `maxiters` is *after* semicolon in included file
-            @test_nowarn trixi_include(@__MODULE__, filename3, maxiters = 14)
+            @test_nowarn_mod trixi_include(@__MODULE__, filename3, maxiters = 14)
             @test y == 14
         finally
             rm(filename1, force = true)
