@@ -18,7 +18,7 @@ for ODEs, see the "Miscellaneous" section of the
 
 # Examples
 
-```jldoctest
+```@example
 julia> redirect_stdout(devnull) do
          trixi_include(@__MODULE__, joinpath(examples_dir(), "tree_1d_dgsem", "elixir_advection_extended.jl"),
                        tspan=(0.0, 0.1))
