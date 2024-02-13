@@ -48,9 +48,9 @@ makedocs(modules = [TrixiBase],
                                   canonical = "https://trixi-framework.github.io/TrixiBase.jl/stable"),
          # Explicitly specify documentation structure
          pages = ["Home" => "index.md",
-                  "API reference" => "reference.md",
-                  "Authors" => "authors.md",
-                  "License" => "license.md"])
+             "API reference" => "reference.md",
+             "Authors" => "authors.md",
+             "License" => "license.md"])
 
 deploydocs(;
            repo = "github.com/trixi-framework/TrixiBase.jl",
