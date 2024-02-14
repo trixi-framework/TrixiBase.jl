@@ -38,7 +38,8 @@ copy_file("LICENSE.md",
           "\n" => "\n> ", r"^" => "# License\n\n> ")
 
 # Make documentation
-makedocs(sitename = "TrixiBase.jl",
+makedocs(modules = [TrixiBase],
+         sitename = "TrixiBase.jl",
          # Provide additional formatting options
          format = Documenter.HTML(
                                   # Disable pretty URLs during manual testing
