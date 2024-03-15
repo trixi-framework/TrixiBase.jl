@@ -5,6 +5,7 @@
 [![Build Status](https://github.com/trixi-framework/TrixiBase.jl/workflows/CI/badge.svg)](https://github.com/trixi-framework/TrixiBase.jl/actions?query=workflow%3ACI)
 [![Coveralls](https://coveralls.io/repos/github/trixi-framework/TrixiBase.jl/badge.svg)](https://coveralls.io/github/trixi-framework/TrixiBase.jl)
 [![Codecov](https://codecov.io/gh/trixi-framework/TrixiBase.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/trixi-framework/TrixiBase.jl)
+[![Aqua QA](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
 [![License: MIT](https://img.shields.io/badge/License-MIT-success.svg)](https://opensource.org/license/mit/)
 
 [TrixiBase.jl](https://github.com/trixi-framework/TrixiBase.jl) 
