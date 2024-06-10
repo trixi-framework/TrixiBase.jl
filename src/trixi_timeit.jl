@@ -43,7 +43,7 @@ Basically the same as a special case of `@timeit_debug` from
 [TimerOutputs.jl](https://github.com/KristofferC/TimerOutputs.jl),
 but without `try ... finally ... end` block. Thus, it's not exception-safe,
 but it also avoids some related performance problems. Since we do not use
-exception handling in Trixi, that's not really an issue.
+exception handling in Trixi.jl, that's not really an issue.
 
 All `@trixi_timeit` timings can be disabled with [`disable_debug_timings`](@ref).
 The timings should then be optimized away, allowing for truly zero-overhead.
