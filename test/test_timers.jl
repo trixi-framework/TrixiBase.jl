@@ -1,6 +1,6 @@
 @testset verbose=true "Timers" begin
     @testset verbose=true "`timer()`" begin
-        @test timer() isa TrixiBase.TimerOutput
+        @test (@inferred timer()) isa TrixiBase.TimerOutput
 
         # Test empty timer output
         TrixiBase.TimerOutputs.reset_timer!(timer())

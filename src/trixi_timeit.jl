@@ -4,24 +4,52 @@
 # and to enable them again by executing
 # `TimerOutputs.enable_debug_timings(TrixiBase)`
 timeit_debug_enabled() = true
+
+"""
+    disable_debug_timings()
+
+Disable all `@trixi_timeit` and `@timeit_debug` timings.
+The timings should be optimized away, allowing for truly zero-overhead.
+Enable timings again with [`enable_debug_timings`](@ref).
+
+See also [`enable_debug_timings`](@ref), [`@trixi_timeit`](@ref).
+"""
 disable_debug_timings() = TimerOutputs.disable_debug_timings(@__MODULE__)
+
+"""
+    enable_debug_timings()
+
+Enable all `@trixi_timeit` and `@timeit_debug` timings.
+
+See also [`disable_debug_timings`](@ref), [`@trixi_timeit`](@ref).
+"""
 enable_debug_timings() = TimerOutputs.enable_debug_timings(@__MODULE__)
 
-# Store main timer for global timing of functions
+# Store main timer for global timing of functions.
+# Always call timer() to hide implementation details.
 const main_timer = TimerOutput()
 
-# Always call timer() to hide implementation details
+"""
+    timer()
+
+Main timer for global timing.
+"""
 timer() = main_timer
 
-#     @trixi_timeit timer() "some label" expression
-#
-# Basically the same as a special case of `@timeit_debug` from
-# [TimerOutputs.jl](https://github.com/KristofferC/TimerOutputs.jl),
-# but without `try ... finally ... end` block. Thus, it's not exception-safe,
-# but it also avoids some related performance problems. Since we do not use
-# exception handling in Trixi, that's not really an issue.
-#
-# Copied from [Trixi.jl](https://github.com/trixi-framework/Trixi.jl).
+"""
+    @trixi_timeit timer() "some label" expression
+
+Basically the same as a special case of `@timeit_debug` from
+[TimerOutputs.jl](https://github.com/KristofferC/TimerOutputs.jl),
+but without `try ... finally ... end` block. Thus, it's not exception-safe,
+but it also avoids some related performance problems. Since we do not use
+exception handling in Trixi, that's not really an issue.
+
+All `@trixi_timeit` timings can be disabled with [`disable_debug_timings`](@ref).
+The timings should then be optimized away, allowing for truly zero-overhead.
+
+See also [`disable_debug_timings`](@ref), [`enable_debug_timings`](@ref).
+"""
 macro trixi_timeit(timer_output, label, expr)
     timeit_block = quote
         if timeit_debug_enabled()
