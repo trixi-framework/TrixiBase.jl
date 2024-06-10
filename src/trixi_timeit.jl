@@ -8,7 +8,7 @@ timeit_debug_enabled() = true
 """
     disable_debug_timings()
 
-Disable all `@trixi_timeit` and `@timeit_debug` timings.
+Disable all [`@trixi_timeit`](@ref) timings.
 The timings should be optimized away, allowing for truly zero-overhead.
 Enable timings again with [`enable_debug_timings`](@ref).
 
