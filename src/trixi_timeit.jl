@@ -32,7 +32,7 @@ const main_timer = TimerOutput()
 """
     timer()
 
-Main timer for global timing.
+Main timer for global timing, e.g., to be used with [`@trixi_timeit`](@ref).
 """
 timer() = main_timer
 
