@@ -1,4 +1,4 @@
-@testset "trixi_include" begin
+@testset verbose=true "`trixi_include`" begin
     @trixi_testset "Basic" begin
         example = """
             x = 4
