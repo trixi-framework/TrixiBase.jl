@@ -19,7 +19,7 @@ disable_debug_timings() = TimerOutputs.disable_debug_timings(@__MODULE__)
 """
     enable_debug_timings()
 
-Enable all `@trixi_timeit` and `@timeit_debug` timings.
+Enable all [`@trixi_timeit`](@ref) timings (default behavior).
 
 See also [`disable_debug_timings`](@ref), [`@trixi_timeit`](@ref).
 """
