@@ -6,14 +6,14 @@
         TrixiBase.TimerOutputs.reset_timer!(timer())
 
         timer_output = """
-         ────────────────────────────────────────────────────────────────────
-                                    Time                    Allocations
-                           ───────────────────────   ────────────────────────
-         Tot / % measured:      91.5s /   0.0%           5.43MiB /   0.0%
+        ────────────────────────────────────────────────────────────────────
+                                   Time                    Allocations
+                          ───────────────────────   ────────────────────────
+        Tot / % measured:      91.5s /   0.0%           5.43MiB /   0.0%
 
-         Section   ncalls     time    %tot     avg     alloc    %tot      avg
-         ────────────────────────────────────────────────────────────────────
-         ────────────────────────────────────────────────────────────────────
+        Section   ncalls     time    %tot     avg     alloc    %tot      avg
+        ────────────────────────────────────────────────────────────────────
+        ────────────────────────────────────────────────────────────────────
         """
         # Remove "Tot / % measured" line and trailing white spaces
         expected = replace(timer_output, r"Tot / % measured: .*" => "",
@@ -34,15 +34,15 @@
         @trixi_timeit timer() "test timer" sin(0.0)
 
         timer_output = """
-         ───────────────────────────────────────────────────────────────────────
-                                       Time                    Allocations
-                              ───────────────────────   ────────────────────────
-           Tot / % measured:      61.4ms /  99.2%           5.60MiB /  99.6%
+        ───────────────────────────────────────────────────────────────────────
+                                      Time                    Allocations
+                             ───────────────────────   ────────────────────────
+          Tot / % measured:      61.4ms /  99.2%           5.60MiB /  99.6%
 
-         Section      ncalls     time    %tot     avg     alloc    %tot      avg
-         ───────────────────────────────────────────────────────────────────────
-         test timer        2   60.9ms  100.0%  60.9ms   5.57MiB  100.0%  5.57MiB
-         ───────────────────────────────────────────────────────────────────────
+        Section      ncalls     time    %tot     avg     alloc    %tot      avg
+        ───────────────────────────────────────────────────────────────────────
+        test timer        2   60.9ms  100.0%  60.9ms   5.57MiB  100.0%  5.57MiB
+        ───────────────────────────────────────────────────────────────────────
         """
         # Remove "Tot / % measured" line and trailing white spaces and replace
         # the "test timer" line (but don't remove it, we want to check that it's there).
@@ -77,15 +77,15 @@
         println(timer())
 
         timer_output = """
-         ─────────────────────────────────────────────────────────────────────────
-                                         Time                    Allocations
-                                ───────────────────────   ────────────────────────
-            Tot / % measured:       23.7ms /   0.0%           1.00MiB /   0.0%
+        ─────────────────────────────────────────────────────────────────────────
+                                        Time                    Allocations
+                               ───────────────────────   ────────────────────────
+           Tot / % measured:       23.7ms /   0.0%           1.00MiB /   0.0%
 
-         Section        ncalls     time    %tot     avg     alloc    %tot      avg
-         ─────────────────────────────────────────────────────────────────────────
-         test timer 2        1    875ns  100.0%   875ns     48.0B  100.0%    48.0B
-         ─────────────────────────────────────────────────────────────────────────
+        Section        ncalls     time    %tot     avg     alloc    %tot      avg
+        ─────────────────────────────────────────────────────────────────────────
+        test timer 2        1    875ns  100.0%   875ns     48.0B  100.0%    48.0B
+        ─────────────────────────────────────────────────────────────────────────
         """
         # Remove "Tot / % measured" line and trailing white spaces and replace
         # the "test timer" line (but don't remove it, we want to check that it's there).
