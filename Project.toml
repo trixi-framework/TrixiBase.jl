@@ -1,7 +1,7 @@
 name = "TrixiBase"
 uuid = "9a0f1c46-06d5-4909-a5a3-ce25d3fa3284"
 authors = ["Michael Schlottke-Lakemper <michael@sloede.com>"]
-version = "0.1.4"
+version = "0.1.5-DEV"
 
 [deps]
 TimerOutputs = "a759f4b9-e2f1-59dc-863e-4aeb61b1ea8f"
