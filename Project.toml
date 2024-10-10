@@ -14,7 +14,7 @@ TrixiBaseMPIExt = "MPI"
 
 [compat]
 MPI = "0.20"
-TimerOutputs = "0.5"
+TimerOutputs = "0.5.25"
 julia = "1.8"
 
 [extras]
