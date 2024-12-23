@@ -30,7 +30,7 @@ julia> redirect_stdout(devnull) do
 0.1
 ```
 """
-function trixi_include(mod::Module, elixir::AbstractString; kwargs...)
+function trixi_include(mapexpr::Function, mod::Module, elixir::AbstractString; kwargs...)
     # Check that all kwargs exist as assignments
     code = read(elixir, String)
     expr = Meta.parse("begin \n$code \nend")
@@ -45,7 +45,12 @@ function trixi_include(mod::Module, elixir::AbstractString; kwargs...)
     if !mpi_isparallel(Val{:MPIExt}())
         @info "You just called `trixi_include`. Julia may now compile the code, please be patient."
     end
-    Base.include(ex -> replace_assignments(insert_maxiters(ex); kwargs...), mod, elixir)
+    Base.include(ex -> replace_assignments(insert_maxiters(mapexpr(ex)); kwargs...),
+                 mod, elixir)
+end
+
+function trixi_include(mod::Module, elixir::AbstractString; kwargs...)
+    trixi_include(identity, mod, elixir; kwargs...)
 end
 
 function trixi_include(elixir::AbstractString; kwargs...)
