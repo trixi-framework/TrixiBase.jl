@@ -3,7 +3,7 @@
 # of `TrixiBase`. However, users will want to evaluate in the global scope of `Main` or something
 # similar to manage dependencies on their own.
 """
-    trixi_include([mod::Module=Main,] elixir::AbstractString; kwargs...)
+    trixi_include([mapexpr::Function,] [mod::Module=Main,] elixir::AbstractString; kwargs...)
 
 `include` the file `elixir` and evaluate its content in the global scope of module `mod`.
 You can override specific assignments in `elixir` by supplying keyword arguments.
@@ -15,6 +15,10 @@ Before replacing assignments in `elixir`, the keyword argument `maxiters` is ins
 into calls to `solve` with it's default value used in the SciML ecosystem
 for ODEs, see the "Miscellaneous" section of the
 [documentation](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/).
+
+The optional first argument `mapexpr` can be used to transform the included code before
+it is evaluated: for each parsed expression `expr` in `elixir`, the `include` function
+actually evaluates `mapexpr(expr)`. If it is omitted, `mapexpr` defaults to `identity`.
 
 # Examples
 
