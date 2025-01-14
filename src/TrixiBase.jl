@@ -1,5 +1,6 @@
 module TrixiBase
 
+using ChangePrecision: ChangePrecision
 using TimerOutputs: TimerOutput, TimerOutputs
 
 include("trixi_include.jl")
