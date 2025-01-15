@@ -78,8 +78,10 @@ See the documentation of ChangePrecision.jl for more details.
 The purpose of this function is to conveniently run a full simulation with `Float32`,
 which is orders of magnitude faster on most GPUs than `Float64`, by just including
 the elixir with `trixi_include_changeprecision(Float32, elixir)`.
-Most code in the Trixi framework is written in a way that changing all floating-point
-numbers in the elixir to `Float32` manually will run the full simulation with single precision.
+Many constructors in the Trixi.jl framework are written in a way that changing all floating-point
+arguments to `Float32` will change the element type to `Float32` as well.
+In TrixiParticles.jl, including an elixir with this macro should be sufficient
+to run the full simulation with single precision.
 """
 function trixi_include_changeprecision(T, mod::Module, filename::AbstractString; kwargs...)
     trixi_include(expr -> ChangePrecision.changeprecision(T, replace_trixi_include(T, expr)),
