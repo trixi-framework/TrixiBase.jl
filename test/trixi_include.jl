@@ -73,7 +73,6 @@
             y = solve(; maxiters=0)
             """
 
-
         mktemp() do path1, io1
             write(io1, example1)
             close(io1)
