@@ -49,7 +49,7 @@ function trixi_include(mapexpr::Function, mod::Module, elixir::AbstractString; k
     if !mpi_isparallel(Val{:MPIExt}())
         @info "You just called `trixi_include`. Julia may now compile the code, please be patient."
     end
-    Base.include(ex -> replace_assignments(insert_maxiters(mapexpr(ex)); kwargs...),
+    Base.include(ex -> mapexpr(replace_assignments(insert_maxiters(ex); kwargs...)),
                  mod, elixir)
 end
 

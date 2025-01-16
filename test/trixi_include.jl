@@ -127,3 +127,73 @@
         end
     end
 end
+
+@trixi_testset "`trixi_include_changeprecision`" begin
+    @trixi_testset "Basic" begin
+        example = """
+            x = 4.0
+            y = zeros(3)
+            """
+
+        filename = tempname()
+        try
+            open(filename, "w") do file
+                write(file, example)
+            end
+
+            # Use `@trixi_testset`, which wraps code in a temporary module, and call
+            # `trixi_include_changeprecision` with `@__MODULE__` in order to isolate this test.
+            @test_nowarn_mod trixi_include_changeprecision(Float32, @__MODULE__, filename)
+            @test @isdefined x
+            @test x == 4
+            @test typeof(x) == Float32
+            @test @isdefined y
+            @test eltype(y) == Float32
+
+            # Manually overwritten assignments are also changed
+            @test_nowarn_mod trixi_include_changeprecision(Float32, @__MODULE__, filename,
+                                                        x = 7.0)
+
+            @test x == 7
+            @test typeof(x) == Float32
+        finally
+            rm(filename, force = true)
+        end
+    end
+
+    @trixi_testset "Recursive" begin
+        example1 = """
+            x = 4.0
+            y = zeros(3)
+            """
+
+        filename1 = tempname()
+
+        example2 = """
+            trixi_include(@__MODULE__, "$filename1", x = 7.0)
+            """
+
+        filename2 = tempname()
+
+        try
+            open(filename1, "w") do file
+                write(file, example1)
+            end
+            open(filename2, "w") do file
+                write(file, example2)
+            end
+
+            # Use `@trixi_testset`, which wraps code in a temporary module, and call
+            # `trixi_include_changeprecision` with `@__MODULE__` in order to isolate this test.
+            @test_nowarn_mod trixi_include_changeprecision(Float32, @__MODULE__, filename2)
+            @test @isdefined x
+            @test x == 7
+            @test typeof(x) == Float32
+            @test @isdefined y
+            @test eltype(y) == Float32
+        finally
+            rm(filename1, force = true)
+            rm(filename2, force = true)
+        end
+    end
+end
