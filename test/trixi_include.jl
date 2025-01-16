@@ -152,7 +152,7 @@ end
 
             # Manually overwritten assignments are also changed
             @test_nowarn_mod trixi_include_changeprecision(Float32, @__MODULE__, filename,
-                                                        x = 7.0)
+                                                           x = 7.0)
 
             @test x == 7
             @test typeof(x) == Float32
