@@ -156,6 +156,11 @@ end
 
             @test x == 7
             @test typeof(x) == Float32
+
+            # Verify default version (that includes in `Main`)
+            @test_nowarn_mod trixi_include_changeprecision(Float32, filename, x = 11.0)
+            @test Main.x == 11
+            @test typeof(Main.x) == Float32
         finally
             rm(filename, force = true)
         end
