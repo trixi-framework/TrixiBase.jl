@@ -169,8 +169,9 @@ end
 
         filename1 = tempname()
 
+        # Use raw string to allow backslashes in Windows paths
         example2 = """
-            trixi_include(@__MODULE__, "$filename1", x = 7.0)
+            trixi_include(@__MODULE__, raw"$filename1", x = 7.0)
             """
 
         filename2 = tempname()
