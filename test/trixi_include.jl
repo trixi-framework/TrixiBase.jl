@@ -4,31 +4,27 @@
             x = 4
             """
 
-        filename = tempname()
-        try
-            open(filename, "w") do file
-                write(file, example)
-            end
+        mktemp() do path, io
+            write(io, example)
+            close(io)
 
             # Use `@trixi_testset`, which wraps code in a temporary module, and call
             # `trixi_include` with `@__MODULE__` in order to isolate this test.
-            @test_nowarn_mod trixi_include(@__MODULE__, filename)
+            @test_nowarn_mod trixi_include(@__MODULE__, path)
             @test @isdefined x
             @test x == 4
 
-            @test_nowarn_mod trixi_include(@__MODULE__, filename, x = 7)
+            @test_nowarn_mod trixi_include(@__MODULE__, path, x = 7)
 
             @test x == 7
 
             # Verify default version (that includes in `Main`)
-            @test_nowarn_mod trixi_include(filename, x = 11)
+            @test_nowarn_mod trixi_include(path, x = 11)
             @test Main.x == 11
 
             @test_throws "assignment `y` not found in expression" trixi_include(@__MODULE__,
-                                                                                filename,
+                                                                                path,
                                                                                 y = 3)
-        finally
-            rm(filename, force = true)
         end
     end
 
@@ -40,22 +36,18 @@
             x = solve()
             """
 
-        filename = tempname()
-        try
-            open(filename, "w") do file
-                write(file, example)
-            end
+        mktemp() do path, io
+            write(io, example)
+            close(io)
 
             # Use `@trixi_testset`, which wraps code in a temporary module, and call
             # `trixi_include` with `@__MODULE__` in order to isolate this test.
             @test_throws "no method matching solve(; maxiters" trixi_include(@__MODULE__,
-                                                                             filename)
+                                                                             path)
 
             @test_throws "no method matching solve(; maxiters" trixi_include(@__MODULE__,
-                                                                             filename,
+                                                                             path,
                                                                              maxiters = 3)
-        finally
-            rm(filename, force = true)
         end
     end
 
@@ -81,49 +73,47 @@
             y = solve(; maxiters=0)
             """
 
-        filename1 = tempname()
-        filename2 = tempname()
-        filename3 = tempname()
-        filename4 = tempname()
-        try
-            open(filename1, "w") do file
-                write(file, example1)
-            end
-            open(filename2, "w") do file
-                write(file, example2)
-            end
-            open(filename3, "w") do file
-                write(file, example3)
-            end
-            open(filename4, "w") do file
-                write(file, example4)
-            end
 
-            # Use `@trixi_testset`, which wraps code in a temporary module, and call
-            # `Base.include` and `trixi_include` with `@__MODULE__` in order to isolate this test.
-            Base.include(@__MODULE__, filename1)
-            @test_nowarn_mod trixi_include(@__MODULE__, filename2)
-            @test @isdefined x
-            # This is the default `maxiters` inserted by `trixi_include`
-            @test x == 10^5
+        mktemp() do path1, io1
+            write(io1, example1)
+            close(io1)
 
-            @test_nowarn_mod trixi_include(@__MODULE__, filename2,
-                                           maxiters = 7)
-            # Test that `maxiters` got overwritten
-            @test x == 7
+            mktemp() do path2, io2
+                write(io2, example2)
+                close(io2)
 
-            # Verify that adding `maxiters` to `maxiters` results in exactly one of them
-            # case 1) `maxiters` is *before* semicolon in included file
-            @test_nowarn_mod trixi_include(@__MODULE__, filename3, maxiters = 11)
-            @test y == 11
-            # case 2) `maxiters` is *after* semicolon in included file
-            @test_nowarn_mod trixi_include(@__MODULE__, filename3, maxiters = 14)
-            @test y == 14
-        finally
-            rm(filename1, force = true)
-            rm(filename2, force = true)
-            rm(filename3, force = true)
-            rm(filename4, force = true)
+                mktemp() do path3, io3
+                    write(io3, example3)
+                    close(io3)
+
+                    mktemp() do path4, io4
+                        write(io4, example4)
+                        close(io4)
+
+                        # Use `@trixi_testset`, which wraps code in a temporary module,
+                        # and call `Base.include` and `trixi_include` with `@__MODULE__`
+                        # in order to isolate this test.
+                        Base.include(@__MODULE__, path1)
+                        @test_nowarn_mod trixi_include(@__MODULE__, path2)
+                        @test @isdefined x
+                        # This is the default `maxiters` inserted by `trixi_include`
+                        @test x == 10^5
+
+                        @test_nowarn_mod trixi_include(@__MODULE__, path2, maxiters = 7)
+                        # Test that `maxiters` got overwritten
+                        @test x == 7
+
+                        # Verify that existing `maxiters` is added exactly once in the
+                        # following cases:
+                        # case 1) `maxiters` is *before* semicolon in included file
+                        @test_nowarn_mod trixi_include(@__MODULE__, path3, maxiters = 11)
+                        @test y == 11
+                        # case 2) `maxiters` is *after* semicolon in included file
+                        @test_nowarn_mod trixi_include(@__MODULE__, path3, maxiters = 14)
+                        @test y == 14
+                    end
+                end
+            end
         end
     end
 end
@@ -135,15 +125,13 @@ end
             y = zeros(3)
             """
 
-        filename = tempname()
-        try
-            open(filename, "w") do file
-                write(file, example)
-            end
+        mktemp() do path, io
+            write(io, example)
+            close(io)
 
             # Use `@trixi_testset`, which wraps code in a temporary module, and call
             # `trixi_include_changeprecision` with `@__MODULE__` in order to isolate this test.
-            @test_nowarn_mod trixi_include_changeprecision(Float32, @__MODULE__, filename)
+            @test_nowarn_mod trixi_include_changeprecision(Float32, @__MODULE__, path)
             @test @isdefined x
             @test x == 4
             @test typeof(x) == Float32
@@ -151,18 +139,16 @@ end
             @test eltype(y) == Float32
 
             # Manually overwritten assignments are also changed
-            @test_nowarn_mod trixi_include_changeprecision(Float32, @__MODULE__, filename,
+            @test_nowarn_mod trixi_include_changeprecision(Float32, @__MODULE__, path,
                                                            x = 7.0)
 
             @test x == 7
             @test typeof(x) == Float32
 
             # Verify default version (that includes in `Main`)
-            @test_nowarn_mod trixi_include_changeprecision(Float32, filename, x = 11.0)
+            @test_nowarn_mod trixi_include_changeprecision(Float32, path, x = 11.0)
             @test Main.x == 11
             @test typeof(Main.x) == Float32
-        finally
-            rm(filename, force = true)
         end
     end
 
@@ -172,34 +158,28 @@ end
             y = zeros(3)
             """
 
-        filename1 = tempname()
+        mktemp() do path1, io1
+            write(io1, example1)
+            close(io1)
 
-        # Use raw string to allow backslashes in Windows paths
-        example2 = """
-            trixi_include(@__MODULE__, raw"$filename1", x = 7.0)
-            """
+            # Use raw string to allow backslashes in Windows paths
+            example2 = """
+                trixi_include(@__MODULE__, raw"$path1", x = 7.0)
+                """
 
-        filename2 = tempname()
+            mktemp() do path2, io2
+                write(io2, example2)
+                close(io2)
 
-        try
-            open(filename1, "w") do file
-                write(file, example1)
+                # Use `@trixi_testset`, which wraps code in a temporary module, and call
+                # `trixi_include_changeprecision` with `@__MODULE__` in order to isolate this test.
+                @test_nowarn_mod trixi_include_changeprecision(Float32, @__MODULE__, path2)
+                @test @isdefined x
+                @test x == 7
+                @test typeof(x) == Float32
+                @test @isdefined y
+                @test eltype(y) == Float32
             end
-            open(filename2, "w") do file
-                write(file, example2)
-            end
-
-            # Use `@trixi_testset`, which wraps code in a temporary module, and call
-            # `trixi_include_changeprecision` with `@__MODULE__` in order to isolate this test.
-            @test_nowarn_mod trixi_include_changeprecision(Float32, @__MODULE__, filename2)
-            @test @isdefined x
-            @test x == 7
-            @test typeof(x) == Float32
-            @test @isdefined y
-            @test eltype(y) == Float32
-        finally
-            rm(filename1, force = true)
-            rm(filename2, force = true)
         end
     end
 end
