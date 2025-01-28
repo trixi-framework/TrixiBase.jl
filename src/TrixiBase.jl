@@ -1,11 +1,12 @@
 module TrixiBase
 
+using ChangePrecision: ChangePrecision
 using TimerOutputs: TimerOutput, TimerOutputs
 
 include("trixi_include.jl")
 include("trixi_timeit.jl")
 
-export trixi_include
+export trixi_include, trixi_include_changeprecision
 export @trixi_timeit, timer, timeit_debug_enabled,
        disable_debug_timings, enable_debug_timings
 

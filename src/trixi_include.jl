@@ -3,7 +3,7 @@
 # of `TrixiBase`. However, users will want to evaluate in the global scope of `Main` or something
 # similar to manage dependencies on their own.
 """
-    trixi_include([mod::Module=Main,] elixir::AbstractString; kwargs...)
+    trixi_include([mapexpr::Function=identity,] [mod::Module=Main,] elixir::AbstractString; kwargs...)
 
 `include` the file `elixir` and evaluate its content in the global scope of module `mod`.
 You can override specific assignments in `elixir` by supplying keyword arguments.
@@ -15,6 +15,10 @@ Before replacing assignments in `elixir`, the keyword argument `maxiters` is ins
 into calls to `solve` with it's default value used in the SciML ecosystem
 for ODEs, see the "Miscellaneous" section of the
 [documentation](https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/).
+
+The optional first argument `mapexpr` can be used to transform the included code before
+it is evaluated: for each parsed expression `expr` in `elixir`, the `include` function
+actually evaluates `mapexpr(expr)`. If it is omitted, `mapexpr` defaults to `identity`.
 
 # Examples
 
@@ -30,7 +34,7 @@ julia> redirect_stdout(devnull) do
 0.1
 ```
 """
-function trixi_include(mod::Module, elixir::AbstractString; kwargs...)
+function trixi_include(mapexpr::Function, mod::Module, elixir::AbstractString; kwargs...)
     # Check that all kwargs exist as assignments
     code = read(elixir, String)
     expr = Meta.parse("begin \n$code \nend")
@@ -45,11 +49,61 @@ function trixi_include(mod::Module, elixir::AbstractString; kwargs...)
     if !mpi_isparallel(Val{:MPIExt}())
         @info "You just called `trixi_include`. Julia may now compile the code, please be patient."
     end
-    Base.include(ex -> replace_assignments(insert_maxiters(ex); kwargs...), mod, elixir)
+    Base.include(ex -> mapexpr(replace_assignments(insert_maxiters(ex); kwargs...)),
+                 mod, elixir)
+end
+
+function trixi_include(mod::Module, elixir::AbstractString; kwargs...)
+    trixi_include(identity, mod, elixir; kwargs...)
 end
 
 function trixi_include(elixir::AbstractString; kwargs...)
     trixi_include(Main, elixir; kwargs...)
+end
+
+"""
+    trixi_include_changeprecision(T, [mod::Module=Main,] elixir::AbstractString; kwargs...)
+
+`include` the elixir `elixir` and evaluate its content in the global scope of module `mod`.
+You can override specific assignments in `elixir` by supplying keyword arguments,
+similar to [`trixi_include`](@ref).
+
+The only difference to [`trixi_include`](@ref) is that the precision of floating-point
+numbers in the included elixir is changed to `T`.
+More precisely, the package [ChangePrecision.jl](https://github.com/JuliaMath/ChangePrecision.jl)
+is used to convert all `Float64` literals, operations like `/` that produce `Float64` results,
+and functions like `ones` that return `Float64` arrays by default, to the desired type `T`.
+See the documentation of ChangePrecision.jl for more details.
+
+The purpose of this function is to conveniently run a full simulation with `Float32`,
+which is orders of magnitude faster on most GPUs than `Float64`, by just including
+the elixir with `trixi_include_changeprecision(Float32, elixir)`.
+Many constructors in the Trixi.jl framework are written in a way that changing all floating-point
+arguments to `Float32` will change the element type to `Float32` as well.
+In TrixiParticles.jl, including an elixir with this macro should be sufficient
+to run the full simulation with single precision.
+"""
+function trixi_include_changeprecision(T, mod::Module, filename::AbstractString; kwargs...)
+    trixi_include(expr -> ChangePrecision.changeprecision(T, replace_trixi_include(T, expr)),
+                  mod, filename; kwargs...)
+end
+
+function trixi_include_changeprecision(T, filename::AbstractString; kwargs...)
+    trixi_include_changeprecision(T, Main, filename; kwargs...)
+end
+
+function replace_trixi_include(T, expr)
+    expr = TrixiBase.walkexpr(expr) do x
+        if x isa Expr
+            if x.head === :call && x.args[1] === :trixi_include
+                x.args[1] = :trixi_include_changeprecision
+                insert!(x.args, 2, :($T))
+            end
+        end
+        return x
+    end
+
+    return expr
 end
 
 # Insert the keyword argument `maxiters` into calls to `solve` and `Trixi.solve`
