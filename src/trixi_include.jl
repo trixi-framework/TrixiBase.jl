@@ -3,7 +3,7 @@
 # of `TrixiBase`. However, users will want to evaluate in the global scope of `Main` or something
 # similar to manage dependencies on their own.
 """
-    trixi_include([mapexpr::Function,] [mod::Module=Main,] elixir::AbstractString; kwargs...)
+    trixi_include([mapexpr::Function=identity,] [mod::Module=Main,] elixir::AbstractString; kwargs...)
 
 `include` the file `elixir` and evaluate its content in the global scope of module `mod`.
 You can override specific assignments in `elixir` by supplying keyword arguments.
