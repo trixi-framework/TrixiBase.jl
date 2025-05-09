@@ -139,7 +139,7 @@ end
 
             # Manually overwritten assignments are also changed
             @trixi_test_nowarn trixi_include_changeprecision(Float32, @__MODULE__, path,
-                                                           x = 7.0)
+                                                             x = 7.0)
 
             @test x == 7
             @test typeof(x) == Float32
@@ -172,7 +172,8 @@ end
 
                 # Use `@trixi_testset`, which wraps code in a temporary module, and call
                 # `trixi_include_changeprecision` with `@__MODULE__` in order to isolate this test.
-                @trixi_test_nowarn trixi_include_changeprecision(Float32, @__MODULE__, path2)
+                @trixi_test_nowarn trixi_include_changeprecision(Float32, @__MODULE__,
+                                                                 path2)
                 @test @isdefined x
                 @test x == 7
                 @test typeof(x) == Float32
