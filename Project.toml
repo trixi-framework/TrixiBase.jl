@@ -17,7 +17,7 @@ TrixiBaseMPIExt = "MPI"
 ChangePrecision = "1.1.0"
 MPI = "0.20"
 TimerOutputs = "0.5.25"
-julia = "1.8"
+julia = "1.10"
 
 [extras]
 MPI = "da04e1cc-30fd-572f-bb4f-1f8673147195"

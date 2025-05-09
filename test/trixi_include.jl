@@ -10,16 +10,16 @@
 
             # Use `@trixi_testset`, which wraps code in a temporary module, and call
             # `trixi_include` with `@__MODULE__` in order to isolate this test.
-            @test_nowarn_mod trixi_include(@__MODULE__, path)
+            @trixi_test_nowarn trixi_include(@__MODULE__, path)
             @test @isdefined x
             @test x == 4
 
-            @test_nowarn_mod trixi_include(@__MODULE__, path, x = 7)
+            @trixi_test_nowarn trixi_include(@__MODULE__, path, x = 7)
 
             @test x == 7
 
             # Verify default version (that includes in `Main`)
-            @test_nowarn_mod trixi_include(path, x = 11)
+            @trixi_test_nowarn trixi_include(path, x = 11)
             @test Main.x == 11
 
             @test_throws "assignment `y` not found in expression" trixi_include(@__MODULE__,
@@ -93,22 +93,22 @@
                         # and call `Base.include` and `trixi_include` with `@__MODULE__`
                         # in order to isolate this test.
                         Base.include(@__MODULE__, path1)
-                        @test_nowarn_mod trixi_include(@__MODULE__, path2)
+                        @trixi_test_nowarn trixi_include(@__MODULE__, path2)
                         @test @isdefined x
                         # This is the default `maxiters` inserted by `trixi_include`
                         @test x == 10^5
 
-                        @test_nowarn_mod trixi_include(@__MODULE__, path2, maxiters = 7)
+                        @trixi_test_nowarn trixi_include(@__MODULE__, path2, maxiters = 7)
                         # Test that `maxiters` got overwritten
                         @test x == 7
 
                         # Verify that existing `maxiters` is added exactly once in the
                         # following cases:
                         # case 1) `maxiters` is *before* semicolon in included file
-                        @test_nowarn_mod trixi_include(@__MODULE__, path3, maxiters = 11)
+                        @trixi_test_nowarn trixi_include(@__MODULE__, path3, maxiters = 11)
                         @test y == 11
                         # case 2) `maxiters` is *after* semicolon in included file
-                        @test_nowarn_mod trixi_include(@__MODULE__, path3, maxiters = 14)
+                        @trixi_test_nowarn trixi_include(@__MODULE__, path3, maxiters = 14)
                         @test y == 14
                     end
                 end
@@ -130,7 +130,7 @@ end
 
             # Use `@trixi_testset`, which wraps code in a temporary module, and call
             # `trixi_include_changeprecision` with `@__MODULE__` in order to isolate this test.
-            @test_nowarn_mod trixi_include_changeprecision(Float32, @__MODULE__, path)
+            @trixi_test_nowarn trixi_include_changeprecision(Float32, @__MODULE__, path)
             @test @isdefined x
             @test x == 4
             @test typeof(x) == Float32
@@ -138,14 +138,14 @@ end
             @test eltype(y) == Float32
 
             # Manually overwritten assignments are also changed
-            @test_nowarn_mod trixi_include_changeprecision(Float32, @__MODULE__, path,
-                                                           x = 7.0)
+            @trixi_test_nowarn trixi_include_changeprecision(Float32, @__MODULE__, path,
+                                                             x = 7.0)
 
             @test x == 7
             @test typeof(x) == Float32
 
             # Verify default version (that includes in `Main`)
-            @test_nowarn_mod trixi_include_changeprecision(Float32, path, x = 11.0)
+            @trixi_test_nowarn trixi_include_changeprecision(Float32, path, x = 11.0)
             @test Main.x == 11
             @test typeof(Main.x) == Float32
         end
@@ -172,7 +172,8 @@ end
 
                 # Use `@trixi_testset`, which wraps code in a temporary module, and call
                 # `trixi_include_changeprecision` with `@__MODULE__` in order to isolate this test.
-                @test_nowarn_mod trixi_include_changeprecision(Float32, @__MODULE__, path2)
+                @trixi_test_nowarn trixi_include_changeprecision(Float32, @__MODULE__,
+                                                                 path2)
                 @test @isdefined x
                 @test x == 7
                 @test typeof(x) == Float32
