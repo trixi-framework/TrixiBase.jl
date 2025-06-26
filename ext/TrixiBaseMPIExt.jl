@@ -7,7 +7,7 @@ if isdefined(Base, :get_extension)
 end
 import TrixiBase
 
-# This is a really working version - assuming the same
+# These are really working functions - assuming the same
 # communication pattern etc. used in Trixi.jl.
 function TrixiBase.mpi_isparallel(::Val{:MPIExt})
     if MPI.Initialized()
@@ -17,4 +17,11 @@ function TrixiBase.mpi_isparallel(::Val{:MPIExt})
     end
 end
 
+function TrixiBase.mpi_isroot_internal(::Module)
+    if MPI.Initialized()
+        return MPI.Comm_rank(MPI.COMM_WORLD) == 0
+    else
+        return true
+    end
+end
 end

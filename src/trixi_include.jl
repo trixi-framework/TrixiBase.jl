@@ -203,8 +203,3 @@ function find_assignment(expr, destination)
 
     result
 end
-
-# This is just a dummy function. We only implement a real
-# version if MPI.jl is loaded to avoid letting TrixiBase.jl
-# depend explicitly on MPI.jl.
-mpi_isparallel(x) = false
