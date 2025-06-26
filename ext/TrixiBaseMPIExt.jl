@@ -1,6 +1,7 @@
 # Package extension for adding MPI-based features to TrixiBase.jl
 module TrixiBaseMPIExt
 
+using MPI
 import TrixiBase
 
 # These are really working functions - assuming the same
