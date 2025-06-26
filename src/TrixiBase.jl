@@ -3,6 +3,7 @@ module TrixiBase
 using ChangePrecision: ChangePrecision
 using TimerOutputs: TimerOutput, TimerOutputs
 
+include("mpi.jl")
 include("trixi_include.jl")
 include("trixi_timeit.jl")
 

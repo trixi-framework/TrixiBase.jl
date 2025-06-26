@@ -46,7 +46,7 @@ function trixi_include(mapexpr::Function, mod::Module, elixir::AbstractString; k
     end
 
     # Print information on potential wait time only in non-parallel case
-    if !mpi_isparallel(Val{:MPIExt}())
+    if !mpi_isparallel()
         @info "You just called `trixi_include`. Julia may now compile the code, please be patient."
     end
     Base.include(ex -> mapexpr(replace_assignments(insert_maxiters(ex); kwargs...)),
@@ -203,8 +203,3 @@ function find_assignment(expr, destination)
 
     result
 end
-
-# This is just a dummy function. We only implement a real
-# version if MPI.jl is loaded to avoid letting TrixiBase.jl
-# depend explicitly on MPI.jl.
-mpi_isparallel(x) = false
