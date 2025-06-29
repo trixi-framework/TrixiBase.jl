@@ -4,6 +4,10 @@ module TrixiBaseMPIExt
 using MPI
 import TrixiBase
 
+function __init__()
+    TrixiBase.__MPI__AVAILABLE__[] = true
+end
+
 # These are really working functions - assuming the same
 # communication pattern etc. used in Trixi.jl.
 function TrixiBase.mpi_isparallel_internal()
