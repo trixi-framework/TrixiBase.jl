@@ -1,7 +1,7 @@
 name = "TrixiBase"
 uuid = "9a0f1c46-06d5-4909-a5a3-ce25d3fa3284"
 authors = ["Michael Schlottke-Lakemper <michael@sloede.com>"]
-version = "0.1.6-dev"
+version = "0.1.6"
 
 [deps]
 ChangePrecision = "3cb15238-376d-56a3-8042-d33272777c9a"
