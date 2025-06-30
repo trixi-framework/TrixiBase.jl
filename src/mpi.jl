@@ -1,10 +1,26 @@
 # These are just dummy functions. We only implement real
 # versions if MPI.jl is loaded to avoid letting TrixiBase.jl
 # depend explicitly on MPI.jl.
-# We dispatch on the return type of get_extension to provide a fallback
 
-mpi_isparallel() = mpi_isparallel_internal(Base.get_extension(TrixiBase, :TrixiBaseMPIExt))
-mpi_isparallel_internal(ext::Nothing) = false
+# This will be true if TrixiBaseMPIExt is loaded
+const __MPI__AVAILABLE__ = Ref{Bool}(false)
 
-mpi_isroot() = mpi_isroot_internal(Base.get_extension(TrixiBase, :TrixiBaseMPIExt))
-mpi_isroot_internal(ext::Nothing) = true
+# These functions are defined in the TrixiBaseMPIExt extension
+function mpi_isparallel_internal end
+function mpi_isroot_internal end
+
+function mpi_isparallel()
+    if __MPI__AVAILABLE__[]
+        return mpi_isparallel_internal()
+    else
+        return false
+    end
+end
+
+function mpi_isroot()
+    if __MPI__AVAILABLE__[]
+        return mpi_isroot_internal()
+    else
+        return true
+    end
+end
