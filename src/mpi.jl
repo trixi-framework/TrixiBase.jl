@@ -2,6 +2,7 @@
 # versions if MPI.jl is loaded to avoid letting TrixiBase.jl
 # depend explicitly on MPI.jl.
 
+# This will be true if TrixiBaseMPIExt is loaded
 const __MPI__AVAILABLE__ = Ref{Bool}(false)
 
 # These functions are defined in the TrixiBaseMPIExt extension
