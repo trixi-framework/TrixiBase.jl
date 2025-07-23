@@ -124,6 +124,7 @@ end
             y = zeros(3)
             """
 
+        using TrixiBase: trixi_include_changeprecision
         mktemp() do path, io
             write(io, example)
             close(io)
@@ -157,6 +158,7 @@ end
             y = zeros(3)
             """
 
+        using TrixiBase: trixi_include_changeprecision
         mktemp() do path1, io1
             write(io1, example1)
             close(io1)
