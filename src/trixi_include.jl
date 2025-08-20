@@ -62,6 +62,25 @@ function trixi_include(elixir::AbstractString; kwargs...)
 end
 
 """
+    @trixi_include(elixir::AbstractString; kwargs...)
+
+This is a convenience macro for [`trixi_include`](@ref) that evaluates the
+`trixi_include` function in the global scope of the current module.
+It is equivalent to calling `trixi_include` with the current module as the first argument.
+"""
+macro trixi_include(elixir, kwargs...)
+    foreach(kwargs) do kwarg
+        if !(kwarg isa Expr && kwarg.head === :(=))
+            throw(ArgumentError("`@trixi_include` only accepts keyword arguments, got: $kwarg"))
+        end
+        kwarg.head = :kw
+    end
+    esc(quote
+        $trixi_include($__module__, $(elixir); $(kwargs...))
+    end)
+end
+
+"""
     trixi_include_changeprecision(T, [mod::Module=Main,] elixir::AbstractString; kwargs...)
 
 `include` the elixir `elixir` and evaluate its content in the global scope of module `mod`.
