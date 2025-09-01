@@ -22,6 +22,10 @@
             @trixi_test_nowarn trixi_include(path, x = 11)
             @test Main.x == 11
 
+            # Verify that the macro version uses the right module
+            @trixi_include(path, x = 3)
+            @test x == 3
+
             @test_throws "assignment `y` not found in expression" trixi_include(@__MODULE__,
                                                                                 path,
                                                                                 y = 3)
