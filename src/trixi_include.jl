@@ -185,13 +185,13 @@ function replace_assignments(expr; kwargs...)
                     elseif arg isa Expr && arg.head === :parameters
                         # Keyword arguments grouped in `parameters`
                         # like `f(; x=5)` or `f(; x)`.
-                        # The first case is handles already because this is an assignment,
-                        # which is replaced in the
-                        # "replace explicit and keyword assignments" block above.
                         for nested_arg in arg.args
-                            # Bare symbol like `x` in `f(; x)`
                             if nested_arg isa Symbol
+                                # Bare symbol like `x` in `f(; x)`
                                 push!(existing_kwargs, nested_arg)
+                            elseif nested_arg isa Expr && nested_arg.head === :kw
+                                # Keyword argument like `x=5` in `f(; x=5)`
+                                push!(existing_kwargs, nested_arg.args[1])
                             end
                         end
                     end
