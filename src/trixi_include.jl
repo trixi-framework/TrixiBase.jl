@@ -40,10 +40,10 @@ function trixi_include(mapexpr::Function, mod::Module, elixir::AbstractString; k
     expr = Meta.parse("begin \n$code \nend")
     expr = insert_maxiters(expr)
 
-    for (key, val) in kwargs
-        # This will throw an error when `key` is not found
-        find_assignment(expr, key)
-    end
+    # for (key, val) in kwargs
+    #     # This will throw an error when `key` is not found
+    #     find_assignment(expr, key)
+    # end
 
     # Print information on potential wait time only in non-parallel case
     if !mpi_isparallel(Val{:MPIExt}())
@@ -160,14 +160,48 @@ walkexpr(f, x) = f(x)
 
 # Replace assignments to `key` in `expr` by `key = val` for all `(key,val)` in `kwargs`.
 function replace_assignments(expr; kwargs...)
-    # replace explicit and keyword assignments
     expr = walkexpr(expr) do x
         if x isa Expr
+            # Replace explicit and keyword assignments
             for (key, val) in kwargs
                 if (x.head === Symbol("=") || x.head === :kw) &&
                    x.args[1] === Symbol(key)
                     x.args[2] = :($val)
                     # dump(x)
+                end
+            end
+
+            # Handle `trixi_include` calls - add kwargs to them as well
+            if (!isempty(kwargs) && x.head === :call && length(x.args) >= 2 &&
+                (x.args[1] === :trixi_include ||
+                 x.args[1] === :trixi_include_changeprecision))
+
+                # Check for existing kwargs (both direct :kw and bare symbols in :parameters)
+                existing_kwargs = Set{Symbol}()
+                for arg in x.args[2:end] # Skip function name
+                    if arg isa Expr && arg.head === :kw
+                        # Direct keyword argument like `x=5` in `f(x=5)`
+                        push!(existing_kwargs, arg.args[1])
+                    elseif arg isa Expr && arg.head === :parameters
+                        # Keyword arguments grouped in `parameters`
+                        # like `f(; x=5)` or `f(; x)`.
+                        # The first case is handles already because this is an assignment,
+                        # which is replaced in the
+                        # "replace explicit and keyword assignments" block above.
+                        for nested_arg in arg.args
+                            # Bare symbol like `x` in `f(; x)`
+                            if nested_arg isa Symbol
+                                push!(existing_kwargs, nested_arg)
+                            end
+                        end
+                    end
+                end
+
+                # Add kwargs that don't already exist
+                for (key, val) in kwargs
+                    if !(Symbol(key) in existing_kwargs)
+                        push!(x.args, Expr(:kw, Symbol(key), val))
+                    end
                 end
             end
         end
