@@ -37,20 +37,30 @@ julia> redirect_stdout(devnull) do
 0.1
 ```
 """
-function trixi_include(mapexpr::Function, mod::Module, elixir::AbstractString; kwargs...)
+function trixi_include(mapexpr::Function, mod::Module, elixir::AbstractString;
+                       _trixi_include_recursive::Bool = false, kwargs...)
     # Check that all kwargs exist as assignments
     code = read(elixir, String)
     expr = Meta.parse("begin \n$code \nend")
     expr = insert_maxiters(expr)
 
     # Validate that all kwargs exist as assignments (with warning for recursive cases)
-    validate_assignments(expr, kwargs, elixir)
+    # Skip for recursive calls because all kwargs are passed to all nested calls,
+    # some of which may not use all kwargs.
+    if !_trixi_include_recursive
+        validate_assignments(expr, kwargs, elixir)
+    end
 
     # Print information on potential wait time only in non-parallel case
     if !mpi_isparallel(Val{:MPIExt}())
         @info "You just called `trixi_include`. Julia may now compile the code, please be patient."
     end
-    Base.include(ex -> mapexpr(replace_assignments(insert_maxiters(ex); kwargs...)),
+
+    # Add kwarg `_trixi_include_recursive`, which will be added to nested calls
+    # to `trixi_include` to avoid the validation above.
+    Base.include(ex -> mapexpr(replace_assignments(insert_maxiters(ex);
+                                                   _trixi_include_recursive = true,
+                                                   kwargs...)),
                  mod, elixir)
 end
 
