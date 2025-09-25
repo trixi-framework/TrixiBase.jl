@@ -11,6 +11,9 @@ Its basic purpose is to make it easier to modify some parameters while running s
 REPL. Additionally, this is used in tests to reduce the computational burden for CI while still
 providing examples with sensible default values for users.
 
+In case of nested calls to `trixi_include` inside `elixir`, the keyword arguments are also
+passed to the nested calls. This allows to override assignments in nested files as well.
+
 Before replacing assignments in `elixir`, the keyword argument `maxiters` is inserted
 into calls to `solve` with it's default value used in the SciML ecosystem
 for ODEs, see the "Miscellaneous" section of the
