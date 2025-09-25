@@ -22,9 +22,8 @@
             @test_nowarn_mod trixi_include(path, x = 11)
             @test Main.x == 11
 
-            @test_throws "assignment `y` not found in expression" trixi_include(@__MODULE__,
-                                                                                path,
-                                                                                y = 3)
+            @test_throws "assignments [:y] not found" trixi_include(@__MODULE__,
+                                                                    path, y = 3)
         end
     end
 
@@ -111,6 +110,139 @@
                         @test_nowarn_mod trixi_include(@__MODULE__, path3, maxiters = 14)
                         @test y == 14
                     end
+                end
+            end
+        end
+    end
+
+    @trixi_testset "Recursive assignment overwriting" begin
+        # Test basic recursive kwargs passing
+        example1 = """
+            x = 1
+            y = 2
+            """
+
+        example2 = """
+            z = 3
+            trixi_include(@__MODULE__, nested_path)
+            """
+
+        mktemp() do path1, io1
+            write(io1, example1)
+            close(io1)
+
+            mktemp() do path2, io2
+                # Use raw string to allow backslashes in Windows paths
+                nested_code = replace(example2, "nested_path" => "raw\"$path1\"")
+                write(io2, nested_code)
+                close(io2)
+
+                # Test that kwargs are passed recursively
+                # Should warn about x,y not being in top file but allow due to nested calls
+                @test_warn "assignments" trixi_include(@__MODULE__, path2; x = 10, y = 20,
+                                                       z = 30)
+                @test @isdefined x
+                @test @isdefined y
+                @test @isdefined z
+                @test x == 10  # Overridden from nested file
+                @test y == 20  # Overridden from nested file
+                @test z == 30  # Overridden from top file
+            end
+        end
+
+        # Test with existing kwargs in nested calls
+        example3 = """
+            a = 100
+            trixi_include(@__MODULE__, nested_path; a = 200)
+            """
+
+        example4 = """
+            a = 1
+            b = 2
+            """
+
+        mktemp() do path3, io3
+            write(io3, example4)
+            close(io3)
+
+            mktemp() do path4, io4
+                nested_code = replace(example3, "nested_path" => "raw\"$path3\"")
+                write(io4, nested_code)
+                close(io4)
+
+                # Test that top-level kwargs override existing nested kwargs
+                trixi_include(@__MODULE__, path4; a = 500, b = 600)
+                @test @isdefined a
+                @test @isdefined b
+                @test a == 500  # Top-level override wins over nested explicit kwarg
+                @test b == 600  # Passed through to nested file
+            end
+        end
+
+        # Test bare symbol syntax with recursion
+        example5 = """
+            x = 42
+            trixi_include(@__MODULE__, nested_path; x)
+            """
+
+        example6 = """
+            x = 1
+            """
+
+        mktemp() do path5, io5
+            write(io5, example6)
+            close(io5)
+
+            mktemp() do path6, io6
+                nested_code = replace(example5, "nested_path" => "raw\"$path5\"")
+                write(io6, nested_code)
+                close(io6)
+
+                # Test bare symbol with recursive override
+                @test_nowarn_mod trixi_include(@__MODULE__, path6; x = 999)
+                @test @isdefined x
+                @test x == 999  # Top-level override
+            end
+        end
+
+        # Test deep nesting (3 levels)
+        example7 = """
+            level1 = 1
+            """
+
+        example8 = """
+            level2 = 2
+            trixi_include(@__MODULE__, level1_path)
+            """
+
+        example9 = """
+            level3 = 3
+            trixi_include(@__MODULE__, level2_path; level2 = 22)
+            """
+
+        mktemp() do path7, io7
+            write(io7, example7)
+            close(io7)
+
+            mktemp() do path8, io8
+                level2_code = replace(example8, "level1_path" => "raw\"$path7\"")
+                write(io8, level2_code)
+                close(io8)
+
+                mktemp() do path9, io9
+                    level3_code = replace(example9, "level2_path" => "raw\"$path8\"")
+                    write(io9, level3_code)
+                    close(io9)
+
+                    # Test 3-level deep recursive override
+                    trixi_include(@__MODULE__, path9; level1 = 111,
+                                  level2 = 222, level3 = 333)
+                    @test @isdefined level1
+                    @test @isdefined level2
+                    @test @isdefined level3
+                    @test level1 == 111  # Passed through 3 levels
+                    @test level2 == 222  # Top-level override wins over level3 explicit kwarg
+                    @test level3 == 333  # Direct override
                 end
             end
         end
