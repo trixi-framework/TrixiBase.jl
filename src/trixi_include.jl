@@ -40,10 +40,8 @@ function trixi_include(mapexpr::Function, mod::Module, elixir::AbstractString; k
     expr = Meta.parse("begin \n$code \nend")
     expr = insert_maxiters(expr)
 
-    # for (key, val) in kwargs
-    #     # This will throw an error when `key` is not found
-    #     find_assignment(expr, key)
-    # end
+    # Validate that all kwargs exist as assignments (with warning for recursive cases)
+    validate_assignments(expr, kwargs, elixir)
 
     # Print information on potential wait time only in non-parallel case
     if !mpi_isparallel(Val{:MPIExt}())
@@ -209,6 +207,37 @@ function replace_assignments(expr; kwargs...)
     end
 
     return expr
+end
+
+# Validate that assignments exist as assignments, with a warning for recursive calls
+function validate_assignments(expr, assignments, filename)
+    isempty(assignments) && return
+
+    found_assignments = Set{Symbol}()
+    has_nested_calls = false
+
+    walkexpr(expr) do x
+        if x isa Expr
+            if (x.head === Symbol("=") || x.head === :kw) && x.args[1] isa Symbol
+                push!(found_assignments, x.args[1])
+            elseif (x.head === :call && length(x.args) >= 2 &&
+                    (x.args[1] === :trixi_include ||
+                     x.args[1] === :trixi_include_changeprecision))
+                has_nested_calls = true
+            end
+        end
+        return x
+    end
+
+    missing_assignments = setdiff(Symbol.(keys(assignments)), found_assignments)
+    if !isempty(missing_assignments)
+        if has_nested_calls
+            @warn "assignments $missing_assignments not found in $filename, " *
+                  "but nested trixi_include calls detected. They may be used in nested files."
+        else
+            throw(ArgumentError("assignments $missing_assignments not found in $filename"))
+        end
+    end
 end
 
 # Find a (keyword or common) assignment to `destination` in `expr`
