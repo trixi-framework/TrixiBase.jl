@@ -208,7 +208,13 @@ function replace_assignments(expr; kwargs...)
                     end
                 end
 
-                # Add kwargs that don't already exist
+                # Add kwargs that don't already exist.
+                # Note that existing keywords as assignment (`x=5`) don't need to be added
+                # again because they are replaced in the loop
+                # "Replace explicit and keyword assignments" above.
+                # Bare symbol like `x` in `f(; x)` must have been defined in the file
+                # before they are passed to `trixi_include`, so there must be an assignment
+                # `x = ...` in the file, which will also be replaced in the loop above.
                 for (key, val) in kwargs
                     if !(Symbol(key) in existing_kwargs)
                         push!(x.args, Expr(:kw, Symbol(key), val))
