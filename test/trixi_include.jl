@@ -199,7 +199,7 @@
                 close(io6)
 
                 # Test bare symbol with recursive override
-                @test_nowarn_mod trixi_include(@__MODULE__, path6; x = 999)
+                trixi_include(@__MODULE__, path6; x = 999)
                 @test @isdefined x
                 @test x == 999  # Top-level override
             end
