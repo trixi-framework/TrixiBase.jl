@@ -183,9 +183,10 @@ function replace_assignments(expr; kwargs...)
             end
 
             # Handle `trixi_include` calls - add kwargs to them as well
-            if (!isempty(kwargs) && x.head === :call && length(x.args) >= 2 &&
-                (x.args[1] === :trixi_include ||
-                 x.args[1] === :trixi_include_changeprecision))
+            is_trixi_include = (x.head === :call && length(x.args) >= 2 &&
+                                (x.args[1] === :trixi_include ||
+                                 x.args[1] === :trixi_include_changeprecision))
+            if !isempty(kwargs) && is_trixi_include
 
                 # Check for existing kwargs (both direct :kw and bare symbols in :parameters)
                 existing_kwargs = Set{Symbol}()
@@ -228,7 +229,8 @@ function replace_assignments(expr; kwargs...)
     return expr
 end
 
-# Validate that assignments exist as assignments, with a warning for recursive calls
+# Validate that keyword arguments passed to `trixi_include` exist as assignments
+# in the expression. Throw an error if they are not found or a warning for recursive calls.
 function validate_assignments(expr, assignments, filename)
     isempty(assignments) && return
 
