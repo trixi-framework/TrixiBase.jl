@@ -23,6 +23,12 @@ The optional first argument `mapexpr` can be used to transform the included code
 it is evaluated: for each parsed expression `expr` in `elixir`, the `include` function
 actually evaluates `mapexpr(expr)`. If it is omitted, `mapexpr` defaults to `identity`.
 
+The keyword argument `enable_assignment_validation`, which is enabled by default,
+can be used to enable or disable validation that all passed keyword arguments exist
+as assignments in `elixir`. If `enable_assignment_validation` is `true` and
+an assignment for a passed keyword argument is not found in `elixir`, an error is thrown.
+If `elixir` contains calls to `trixi_include` itself, a warning is issued instead of an error.
+
 # Examples
 
 ```@example
@@ -38,16 +44,16 @@ julia> redirect_stdout(devnull) do
 ```
 """
 function trixi_include(mapexpr::Function, mod::Module, elixir::AbstractString;
-                       _trixi_include_recursive::Bool = false, kwargs...)
+                       enable_assignment_validation::Bool = true, kwargs...)
     # Check that all kwargs exist as assignments
     code = read(elixir, String)
     expr = Meta.parse("begin \n$code \nend")
     expr = insert_maxiters(expr)
 
-    # Validate that all kwargs exist as assignments (with warning for recursive cases)
-    # Skip for recursive calls because all kwargs are passed to all nested calls,
+    # Validate that all kwargs exist as assignments (with warning for recursive cases).
+    # Skip for nested calls because all kwargs are passed to all nested calls,
     # some of which may not use all kwargs.
-    if !_trixi_include_recursive
+    if enable_assignment_validation
         validate_assignments(expr, kwargs, elixir)
     end
 
@@ -56,10 +62,10 @@ function trixi_include(mapexpr::Function, mod::Module, elixir::AbstractString;
         @info "You just called `trixi_include`. Julia may now compile the code, please be patient."
     end
 
-    # Add kwarg `_trixi_include_recursive`, which will be added to nested calls
-    # to `trixi_include` to avoid the validation above.
+    # Add kwarg `enable_assignment_validation` to disable validation in nested
+    # `trixi_include` calls.
     Base.include(ex -> mapexpr(replace_assignments(insert_maxiters(ex);
-                                                   _trixi_include_recursive = true,
+                                                   enable_assignment_validation = false,
                                                    kwargs...)),
                  mod, elixir)
 end
