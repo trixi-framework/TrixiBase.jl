@@ -150,10 +150,10 @@
                 @test z == 30 # Overridden from top file
 
                 # Test that kwargs are NOT passed recursively
-                @test_nowarn trixi_include(@__MODULE__, path2;
-                                           x = 10, y = 20, z = 30,
-                                           replace_assignments_recursive = false,
-                                           enable_assignment_validation = false)
+                @trixi_test_nowarn trixi_include(@__MODULE__, path2;
+                                                 x = 10, y = 20, z = 30,
+                                                 replace_assignments_recursive = false,
+                                                 enable_assignment_validation = false)
 
                 @test x == 1 # Not overridden from nested file
                 @test y == 2 # Not overridden from nested file
