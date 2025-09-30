@@ -3,16 +3,15 @@
 # of `TrixiBase`. However, users will want to evaluate in the global scope of `Main` or something
 # similar to manage dependencies on their own.
 """
-    trixi_include([mapexpr::Function=identity,] [mod::Module=Main,] elixir::AbstractString; kwargs...)
+    trixi_include([mapexpr::Function=identity,] [mod::Module=Main,] elixir::AbstractString;
+                  enable_assignment_validation::Bool = true,
+                  replace_assignments_recursive::Bool = false, kwargs...)
 
 `include` the file `elixir` and evaluate its content in the global scope of module `mod`.
 You can override specific assignments in `elixir` by supplying keyword arguments.
 Its basic purpose is to make it easier to modify some parameters while running simulations from the
 REPL. Additionally, this is used in tests to reduce the computational burden for CI while still
 providing examples with sensible default values for users.
-
-In case of nested calls to `trixi_include` inside `elixir`, the keyword arguments are also
-passed to the nested calls. This allows to override assignments in nested files as well.
 
 Before replacing assignments in `elixir`, the keyword argument `maxiters` is inserted
 into calls to `solve` with it's default value used in the SciML ecosystem
@@ -23,11 +22,15 @@ The optional first argument `mapexpr` can be used to transform the included code
 it is evaluated: for each parsed expression `expr` in `elixir`, the `include` function
 actually evaluates `mapexpr(expr)`. If it is omitted, `mapexpr` defaults to `identity`.
 
+With `replace_assignments_recursive=true`, the keyword arguments are also passed
+to nested calls of `trixi_include`. This allows to override assignments in nested files as well.
+
 The keyword argument `enable_assignment_validation`, which is enabled by default,
 can be used to enable or disable validation that all passed keyword arguments exist
 as assignments in `elixir`. If `enable_assignment_validation` is `true` and
 an assignment for a passed keyword argument is not found in `elixir`, an error is thrown.
-If `elixir` contains calls to `trixi_include` itself, a warning is issued instead of an error.
+If `replace_assignments_recursive` is `true` and `elixir` contains calls to `trixi_include`
+itself, a warning is issued instead of an error.
 
 # Examples
 
@@ -44,7 +47,8 @@ julia> redirect_stdout(devnull) do
 ```
 """
 function trixi_include(mapexpr::Function, mod::Module, elixir::AbstractString;
-                       enable_assignment_validation::Bool = true, kwargs...)
+                       enable_assignment_validation::Bool = true,
+                       replace_assignments_recursive::Bool = false, kwargs...)
     # Check that all kwargs exist as assignments
     code = read(elixir, String)
     expr = Meta.parse("begin \n$code \nend")
@@ -54,7 +58,7 @@ function trixi_include(mapexpr::Function, mod::Module, elixir::AbstractString;
     # Skip for nested calls because all kwargs are passed to all nested calls,
     # some of which may not use all kwargs.
     if enable_assignment_validation
-        validate_assignments(expr, kwargs, elixir)
+        validate_assignments(expr, kwargs, elixir, replace_assignments_recursive)
     end
 
     # Print information on potential wait time only in non-parallel case
@@ -62,12 +66,20 @@ function trixi_include(mapexpr::Function, mod::Module, elixir::AbstractString;
         @info "You just called `trixi_include`. Julia may now compile the code, please be patient."
     end
 
-    # Add kwarg `enable_assignment_validation` to disable validation in nested
-    # `trixi_include` calls.
-    Base.include(ex -> mapexpr(replace_assignments(insert_maxiters(ex);
-                                                   enable_assignment_validation = false,
-                                                   kwargs...)),
-                 mod, elixir)
+    if replace_assignments_recursive
+        # Add kwarg `enable_assignment_validation` to disable validation in nested
+        # `trixi_include` calls.
+        Base.include(ex -> mapexpr(replace_assignments(insert_maxiters(ex),
+                                                       replace_assignments_recursive;
+                                                       enable_assignment_validation = false,
+                                                       replace_assignments_recursive = true,
+                                                       kwargs...)),
+                     mod, elixir)
+    else
+        Base.include(ex -> mapexpr(replace_assignments(insert_maxiters(ex);
+                                                       kwargs...)),
+                     mod, elixir)
+    end
 end
 
 function trixi_include(mod::Module, elixir::AbstractString; kwargs...)
@@ -176,7 +188,7 @@ walkexpr(f, expr::Expr) = f(Expr(expr.head, (walkexpr(f, arg) for arg in expr.ar
 walkexpr(f, x) = f(x)
 
 # Replace assignments to `key` in `expr` by `key = val` for all `(key,val)` in `kwargs`.
-function replace_assignments(expr; kwargs...)
+function replace_assignments(expr, recursive = false; kwargs...)
     expr = walkexpr(expr) do x
         if x isa Expr
             # Replace explicit and keyword assignments
@@ -188,11 +200,12 @@ function replace_assignments(expr; kwargs...)
                 end
             end
 
-            # Handle `trixi_include` calls - add kwargs to them as well
+            # If `recursive` is true:
+            # Handle `trixi_include` calls - add kwargs to them as well.
             is_trixi_include = (x.head === :call && length(x.args) >= 2 &&
                                 (x.args[1] === :trixi_include ||
                                  x.args[1] === :trixi_include_changeprecision))
-            if !isempty(kwargs) && is_trixi_include
+            if !isempty(kwargs) && is_trixi_include && recursive
 
                 # Check for existing kwargs (both direct :kw and bare symbols in :parameters)
                 existing_kwargs = Set{Symbol}()
@@ -237,7 +250,7 @@ end
 
 # Validate that keyword arguments passed to `trixi_include` exist as assignments
 # in the expression. Throw an error if they are not found or a warning for recursive calls.
-function validate_assignments(expr, assignments, filename)
+function validate_assignments(expr, assignments, filename, replace_assignments_recursive)
     isempty(assignments) && return
 
     found_assignments = Set{Symbol}()
@@ -258,7 +271,7 @@ function validate_assignments(expr, assignments, filename)
 
     missing_assignments = setdiff(Symbol.(keys(assignments)), found_assignments)
     if !isempty(missing_assignments)
-        if has_nested_calls
+        if replace_assignments_recursive && has_nested_calls
             @warn "assignments $missing_assignments not found in $filename, " *
                   "but nested trixi_include calls detected. They may be used in nested files."
         else

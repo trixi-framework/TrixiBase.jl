@@ -139,14 +139,30 @@
 
                 # Test that kwargs are passed recursively
                 # Should warn about x,y not being in top file but allow due to nested calls
-                @test_warn "assignments" trixi_include(@__MODULE__, path2; x = 10, y = 20,
-                                                       z = 30)
+                @test_warn "assignments" trixi_include(@__MODULE__, path2;
+                                                       x = 10, y = 20, z = 30,
+                                                       replace_assignments_recursive = true)
                 @test @isdefined x
                 @test @isdefined y
                 @test @isdefined z
-                @test x == 10  # Overridden from nested file
-                @test y == 20  # Overridden from nested file
-                @test z == 30  # Overridden from top file
+                @test x == 10 # Overridden from nested file
+                @test y == 20 # Overridden from nested file
+                @test z == 30 # Overridden from top file
+
+                # Test that kwargs are NOT passed recursively
+                @test_warn "assignments" trixi_include(@__MODULE__, path2;
+                                                       x = 10, y = 20, z = 30,
+                                                       replace_assignments_recursive = false,
+                                                       enable_assignment_validation = false)
+
+                @test x == 1 # Not overridden from nested file
+                @test y == 2 # Not overriden from nested file
+                @test z == 30 # Overridden from top file
+
+                # Without disabling validation, this should result in an error:
+                @test_throws "assignments [:x, :y] not found" trixi_include(@__MODULE__,
+                                                                           path2; x = 10,
+                                                                           y = 20, z = 30)
             end
         end
 
@@ -171,7 +187,8 @@
                 close(io4)
 
                 # Test that top-level kwargs override existing nested kwargs
-                trixi_include(@__MODULE__, path4; a = 500, b = 600)
+                trixi_include(@__MODULE__, path4; a = 500, b = 600,
+                              replace_assignments_recursive = true)
                 @test @isdefined a
                 @test @isdefined b
                 @test a == 500  # Top-level override wins over nested explicit kwarg
@@ -199,7 +216,8 @@
                 close(io6)
 
                 # Test bare symbol with recursive override
-                @trixi_test_nowarn trixi_include(@__MODULE__, path6; x = 999)
+                @trixi_test_nowarn trixi_include(@__MODULE__, path6; x = 999,
+                                                replace_assignments_recursive = true)
                 @test @isdefined x
                 @test x == 999  # Top-level override
             end
@@ -236,7 +254,8 @@
 
                     # Test 3-level deep recursive override
                     trixi_include(@__MODULE__, path9; level1 = 111,
-                                  level2 = 222, level3 = 333)
+                                  level2 = 222, level3 = 333,
+                                  replace_assignments_recursive = true)
                     @test @isdefined level1
                     @test @isdefined level2
                     @test @isdefined level3
