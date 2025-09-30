@@ -156,7 +156,7 @@
                                                        enable_assignment_validation = false)
 
                 @test x == 1 # Not overridden from nested file
-                @test y == 2 # Not overriden from nested file
+                @test y == 2 # Not overridden from nested file
                 @test z == 30 # Overridden from top file
 
                 # Without disabling validation, this should result in an error:
