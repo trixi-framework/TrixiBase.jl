@@ -161,8 +161,8 @@
 
                 # Without disabling validation, this should result in an error:
                 @test_throws "assignments [:x, :y] not found" trixi_include(@__MODULE__,
-                                                                           path2; x = 10,
-                                                                           y = 20, z = 30)
+                                                                            path2; x = 10,
+                                                                            y = 20, z = 30)
             end
         end
 
@@ -217,7 +217,7 @@
 
                 # Test bare symbol with recursive override
                 @trixi_test_nowarn trixi_include(@__MODULE__, path6; x = 999,
-                                                replace_assignments_recursive = true)
+                                                 replace_assignments_recursive = true)
                 @test @isdefined x
                 @test x == 999  # Top-level override
             end
