@@ -11,16 +11,32 @@
             # Use `@trixi_testset`, which wraps code in a temporary module, and call
             # `trixi_include` with `@__MODULE__` in order to isolate this test.
             @trixi_test_nowarn trixi_include(@__MODULE__, path)
-            @test @isdefined x
-            @test x == 4
+            if VERSION >= v"1.12"
+                mod = @__MODULE__
+                @test @invokelatest isdefined(mod, :x)
+                @test (@invokelatest mod.x) == 4
+            else
+                @test @isdefined x
+                @test x == 4
+            end
 
             @trixi_test_nowarn trixi_include(@__MODULE__, path, x = 7)
 
-            @test x == 7
+            if VERSION >= v"1.12"
+                mod = @__MODULE__
+                @test (@invokelatest mod.x) == 7
+            else
+                @test x == 7
+            end
 
             # Verify default version (that includes in `Main`)
             @trixi_test_nowarn trixi_include(path, x = 11)
-            @test Main.x == 11
+            if VERSION >= v"1.12"
+                mod = Main
+                @test (@invokelatest mod.x) == 11
+            else
+                @test Main.x == 11
+            end
 
             @test_throws "assignments [:y] not found" trixi_include(@__MODULE__,
                                                                     path, y = 3)
@@ -93,22 +109,44 @@
                         # in order to isolate this test.
                         Base.include(@__MODULE__, path1)
                         @trixi_test_nowarn trixi_include(@__MODULE__, path2)
-                        @test @isdefined x
-                        # This is the default `maxiters` inserted by `trixi_include`
-                        @test x == 10^5
+                        if VERSION >= v"1.12"
+                            mod = @__MODULE__
+                            @test @invokelatest isdefined(mod, :x)
+                            # This is the default `maxiters` inserted by `trixi_include`
+                            @test (@invokelatest mod.x) == 10^5
+                        else
+                            @test @isdefined x
+                            # This is the default `maxiters` inserted by `trixi_include`
+                            @test x == 10^5
+                        end
 
                         @trixi_test_nowarn trixi_include(@__MODULE__, path2, maxiters = 7)
                         # Test that `maxiters` got overwritten
-                        @test x == 7
+                        if VERSION >= v"1.12"
+                            mod = @__MODULE__
+                            @test (@invokelatest mod.x) == 7
+                        else
+                            @test x == 7
+                        end
 
                         # Verify that existing `maxiters` is added exactly once in the
                         # following cases:
                         # case 1) `maxiters` is *before* semicolon in included file
                         @trixi_test_nowarn trixi_include(@__MODULE__, path3, maxiters = 11)
-                        @test y == 11
+                        if VERSION >= v"1.12"
+                            mod = @__MODULE__
+                            @test (@invokelatest mod.y) == 11
+                        else
+                            @test y == 11
+                        end
                         # case 2) `maxiters` is *after* semicolon in included file
                         @trixi_test_nowarn trixi_include(@__MODULE__, path3, maxiters = 14)
-                        @test y == 14
+                        if VERSION >= v"1.12"
+                            mod = @__MODULE__
+                            @test (@invokelatest mod.y) == 14
+                        else
+                            @test y == 14
+                        end
                     end
                 end
             end
@@ -142,22 +180,38 @@
                 @test_warn "assignments" trixi_include(@__MODULE__, path2;
                                                        x = 10, y = 20, z = 30,
                                                        replace_assignments_recursive = true)
-                @test @isdefined x
-                @test @isdefined y
-                @test @isdefined z
-                @test x == 10 # Overridden from nested file
-                @test y == 20 # Overridden from nested file
-                @test z == 30 # Overridden from top file
-
+                if VERSION >= v"1.12"
+                    mod = @__MODULE__
+                    @test @invokelatest isdefined(mod, :x)
+                    @test @invokelatest isdefined(mod, :y)
+                    @test @invokelatest isdefined(mod, :z)
+                    @test (@invokelatest mod.x) == 10 # Overridden from nested file
+                    @test (@invokelatest mod.y) == 20 # Overridden from nested file
+                    @test (@invokelatest mod.z) == 30 # Overridden from nested file
+                else
+                    @test @isdefined x
+                    @test @isdefined y
+                    @test @isdefined z
+                    @test x == 10 # Overridden from nested file
+                    @test y == 20 # Overridden from nested file
+                    @test z == 30 # Overridden from top file
+                end
                 # Test that kwargs are NOT passed recursively
                 @trixi_test_nowarn trixi_include(@__MODULE__, path2;
                                                  x = 10, y = 20, z = 30,
                                                  replace_assignments_recursive = false,
                                                  enable_assignment_validation = false)
 
-                @test x == 1 # Not overridden from nested file
-                @test y == 2 # Not overridden from nested file
-                @test z == 30 # Overridden from top file
+                if VERSION >= v"1.12"
+                    mod = @__MODULE__
+                    @test (@invokelatest mod.x) == 1 # Not overridden from nested file
+                    @test (@invokelatest mod.y) == 2 # Not overridden from nested file
+                    @test (@invokelatest mod.z) == 30 # Overridden from nested file
+                else
+                    @test x == 1 # Not overridden from nested file
+                    @test y == 2 # Not overridden from nested file
+                    @test z == 30 # Overridden from top file
+                end
 
                 # Without disabling validation, this should result in an error:
                 @test_throws "assignments [:x, :y] not found" trixi_include(@__MODULE__,
@@ -189,10 +243,18 @@
                 # Test that top-level kwargs override existing nested kwargs
                 trixi_include(@__MODULE__, path4; a = 500, b = 600,
                               replace_assignments_recursive = true)
-                @test @isdefined a
-                @test @isdefined b
-                @test a == 500  # Top-level override wins over nested explicit kwarg
-                @test b == 600  # Passed through to nested file
+                if VERSION >= v"1.12"
+                    mod = @__MODULE__
+                    @test @invokelatest isdefined(mod, :a)
+                    @test @invokelatest isdefined(mod, :b)
+                    @test (@invokelatest mod.a) == 500 # Top-level override wins over nested explicit kwarg
+                    @test (@invokelatest mod.b) == 600 # Passed through to nested file
+                else
+                    @test @isdefined a
+                    @test @isdefined b
+                    @test a == 500  # Top-level override wins over nested explicit kwarg
+                    @test b == 600  # Passed through to nested file
+                end
             end
         end
 
@@ -218,8 +280,14 @@
                 # Test bare symbol with recursive override
                 @trixi_test_nowarn trixi_include(@__MODULE__, path6; x = 999,
                                                  replace_assignments_recursive = true)
-                @test @isdefined x
-                @test x == 999  # Top-level override
+                if VERSION >= v"1.12"
+                    mod = @__MODULE__
+                    @test @invokelatest isdefined(mod, :x)
+                    @test (@invokelatest mod.x) == 999 # Top-level override
+                else
+                    @test @isdefined x
+                    @test x == 999  # Top-level override
+                end
             end
         end
 
@@ -256,12 +324,22 @@
                     trixi_include(@__MODULE__, path9; level1 = 111,
                                   level2 = 222, level3 = 333,
                                   replace_assignments_recursive = true)
-                    @test @isdefined level1
-                    @test @isdefined level2
-                    @test @isdefined level3
-                    @test level1 == 111  # Passed through 3 levels
-                    @test level2 == 222  # Top-level override wins over level3 explicit kwarg
-                    @test level3 == 333  # Direct override
+                    if VERSION >= v"1.12"
+                        mod = @__MODULE__
+                        @test @invokelatest isdefined(mod, :level1)
+                        @test @invokelatest isdefined(mod, :level2)
+                        @test @invokelatest isdefined(mod, :level3)
+                        @test (@invokelatest mod.level1) == 111 # Passed through 3 levels
+                        @test (@invokelatest mod.level2) == 222 # Top-level override wins over level3 explicit kwarg
+                        @test (@invokelatest mod.level3) == 333 # Direct override
+                    else
+                        @test @isdefined level1
+                        @test @isdefined level2
+                        @test @isdefined level3
+                        @test level1 == 111  # Passed through 3 levels
+                        @test level2 == 222  # Top-level override wins over level3 explicit kwarg
+                        @test level3 == 333  # Direct override
+                    end
                 end
             end
         end
@@ -283,23 +361,44 @@ end
             # Use `@trixi_testset`, which wraps code in a temporary module, and call
             # `trixi_include_changeprecision` with `@__MODULE__` in order to isolate this test.
             @trixi_test_nowarn trixi_include_changeprecision(Float32, @__MODULE__, path)
-            @test @isdefined x
-            @test x == 4
-            @test typeof(x) == Float32
-            @test @isdefined y
-            @test eltype(y) == Float32
+            if VERSION >= v"1.12"
+                mod = @__MODULE__
+                @test @invokelatest isdefined(mod, :x)
+                @test (@invokelatest mod.x) == 4
+                @test eltype(@invokelatest mod.x) == Float32
+                @test @invokelatest isdefined(mod, :y)
+                @test eltype(@invokelatest mod.y) == Float32
+            else
+                @test @isdefined x
+                @test x == 4
+                @test typeof(x) == Float32
+                @test @isdefined y
+                @test eltype(y) == Float32
+            end
 
             # Manually overwritten assignments are also changed
             @trixi_test_nowarn trixi_include_changeprecision(Float32, @__MODULE__, path,
                                                              x = 7.0)
 
-            @test x == 7
-            @test typeof(x) == Float32
+            if VERSION >= v"1.12"
+                mod = @__MODULE__
+                @test (@invokelatest mod.x) == 7
+                @test eltype(@invokelatest mod.x) == Float32
+            else
+                @test x == 7
+                @test typeof(x) == Float32
+            end
 
             # Verify default version (that includes in `Main`)
             @trixi_test_nowarn trixi_include_changeprecision(Float32, path, x = 11.0)
-            @test Main.x == 11
-            @test typeof(Main.x) == Float32
+            if VERSION >= v"1.12"
+                mod = Main
+                @test (@invokelatest mod.x) == 11
+                @test eltype(@invokelatest mod.x) == Float32
+            else
+                @test Main.x == 11
+                @test typeof(Main.x) == Float32
+            end
         end
     end
 
@@ -327,11 +426,20 @@ end
                 # `trixi_include_changeprecision` with `@__MODULE__` in order to isolate this test.
                 @trixi_test_nowarn trixi_include_changeprecision(Float32, @__MODULE__,
                                                                  path2)
-                @test @isdefined x
-                @test x == 7
-                @test typeof(x) == Float32
-                @test @isdefined y
-                @test eltype(y) == Float32
+                if VERSION >= v"1.12"
+                    mod = @__MODULE__
+                    @test @invokelatest isdefined(mod, :x)
+                    @test (@invokelatest mod.x) == 7
+                    @test eltype(@invokelatest mod.x) == Float32
+                    @test @invokelatest isdefined(mod, :y)
+                    @test eltype(@invokelatest mod.y) == Float32
+                else
+                    @test @isdefined x
+                    @test x == 7
+                    @test typeof(x) == Float32
+                    @test @isdefined y
+                    @test eltype(y) == Float32
+                end
             end
         end
     end
