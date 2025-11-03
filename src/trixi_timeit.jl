@@ -55,14 +55,12 @@ macro trixi_timeit(timer_output, label, expr)
         if timeit_debug_enabled()
             local to = $(esc(timer_output))
             local enabled = to.enabled
-            if enabled
-                local accumulated_data = $(TimerOutputs.push!)(to, $(esc(label)))
-            end
             local b0 = $(TimerOutputs.gc_bytes)()
             local t0 = $(TimerOutputs.time_ns)()
         end
         local val = $(esc(expr))
         if timeit_debug_enabled() && enabled
+            local accumulated_data = $(TimerOutputs.push!)(to, $(esc(label)))
             $(TimerOutputs.do_accumulate!)(accumulated_data, t0, b0)
             $(TimerOutputs.pop!)(to)
         end
