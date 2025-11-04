@@ -53,27 +53,21 @@ See also [`disable_debug_timings`](@ref), [`enable_debug_timings`](@ref).
 macro trixi_timeit(timer_output, label, expr)
     timeit_block = quote
         if timeit_debug_enabled()
-            # prepare timer
             local to = $(esc(timer_output))
             local enabled = to.enabled
             if enabled
                 local accumulated_data = $(TimerOutputs.push!)(to, $(esc(label)))
+            else
+                # dummy to avoid issues with JET.jl complaining about potentially undefined variables
+                local accumulated_data = TimerOutputs.TimeData(0, 0, 0, 0)
             end
             local b0 = $(TimerOutputs.gc_bytes)()
             local t0 = $(TimerOutputs.time_ns)()
-
-            # run user code
-            local val = $(esc(expr))
-
-            # postprocess
-            if enabled
-                local accumulated_data = $(TimerOutputs.push!)(to, $(esc(label)))
-                $(TimerOutputs.do_accumulate!)(accumulated_data, t0, b0)
-                $(TimerOutputs.pop!)(to)
-            end
-        else
-            # just run the user code
-            local val = $(esc(expr))
+        end
+        local val = $(esc(expr))
+        if timeit_debug_enabled() && enabled
+            $(TimerOutputs.do_accumulate!)(accumulated_data, t0, b0)
+            $(TimerOutputs.pop!)(to)
         end
         val
     end
