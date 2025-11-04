@@ -68,7 +68,7 @@
         @trixi_timeit timer() "test timer" sin(0.0)
         @trixi_timeit timer() "test timer" sin(0.0)
 
-        # Disable timings
+        # Enable timings
         enable_debug_timings()
 
         # This timing should be counted
@@ -102,14 +102,14 @@
         # Start with empty timer output
         TrixiBase.TimerOutputs.reset_timer!(timer())
 
-        # Disable timings
+        # Disable timer
         TrixiBase.TimerOutputs.disable_timer!(timer())
 
         # These two timings should be disabled
         @trixi_timeit timer() "test timer" sin(0.0)
         @trixi_timeit timer() "test timer" sin(0.0)
 
-        # Disable timings
+        # Enable timer
         TrixiBase.TimerOutputs.enable_timer!(timer())
 
         # This timing should be counted
