@@ -1,7 +1,7 @@
-using KernelAbstractions
-using Polyester
-using Base.Threads
-using GPUArraysCore
+using KernelAbstractions: KernelAbstractions, @kernel, @index
+using Polyester: Polyester
+using Base.Threads: Threads
+using GPUArraysCore: AbstractGPUArray
 
 abstract type AbstractThreadingBackend end
 
