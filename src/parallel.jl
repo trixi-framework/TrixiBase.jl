@@ -1,6 +1,7 @@
 using KernelAbstractions
 using Polyester
 using Base.Threads
+using GPUArraysCore
 
 abstract type AbstractThreadingBackend end
 
@@ -144,3 +145,5 @@ end
     i = @index(Global)
     @inline f(i)
 end
+
+# TODO: parallel_mapreduce
