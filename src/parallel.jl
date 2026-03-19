@@ -1,37 +1,6 @@
-# Return the `i`-th column of the array `A` as an `SVector`.
-@inline function extract_svector(A, ::Val{NDIMS}, i) where {NDIMS}
-    # Explicit bounds check, which can be removed by calling this function with `@inbounds`
-    @boundscheck checkbounds(A, NDIMS, i)
-
-    # Assume inbounds access now
-    return SVector(ntuple(@inline(dim->@inbounds A[dim, i]), NDIMS))
-end
-
-# When particles end up with coordinates so big that the cell coordinates
-# exceed the range of Int, then `floor(Int, i)` will fail with an InexactError.
-# In this case, we can just use typemax(Int), since we can assume that particles
-# that far away will not interact with anything, anyway.
-# This usually indicates an instability, but we don't want the simulation to crash,
-# since adaptive time integration methods may detect the instability and reject the
-# time step.
-# If we threw an error here, we would prevent the time integration method from
-# retrying with a smaller time step, and we would thus crash perfectly fine simulations.
-@inline function floor_to_int(i)
-    # `Base.floor(Int, i)` is defined as `trunc(Int, round(x, RoundDown))`
-    rounded = round(i, RoundDown)
-
-    # `Base.trunc(Int, x)` throws an `InexactError` in these cases, and otherwise
-    # returns `unsafe_trunc(Int, rounded)`.
-    if isnan(rounded) || rounded >= typemax(Int)
-        return typemax(Int)
-    elseif rounded <= typemin(Int)
-        return typemin(Int)
-    end
-
-    # After making sure that `rounded` is in the range of `Int`,
-    # we can safely call `unsafe_trunc`.
-    return unsafe_trunc(Int, rounded)
-end
+using KernelAbstractions
+using Polyester
+using Base.Threads
 
 abstract type AbstractThreadingBackend end
 
@@ -80,10 +49,9 @@ For GPU arrays, the respective `KernelAbstractions.Backend` is returned.
 """
 @inline default_backend(::AbstractArray) = PolyesterBackend()
 @inline default_backend(x::AbstractGPUArray) = KernelAbstractions.get_backend(x)
-@inline default_backend(x::PermutedDimsArray) = default_backend(x.parent)
 
 """
-    @threaded backend for ... end
+    @par backend for ... end
 
 Run either a threaded CPU loop or launch a kernel on the GPU, depending on the `backend`.
 Semantically the same as `Threads.@threads` when iterating over a `AbstractUnitRange`
@@ -104,54 +72,57 @@ This allows to write generic code that works for both CPU and GPU arrays.
     This macro does not necessarily work for general `for` loops. For example,
     it does not necessarily support general iterables such as `eachline(filename)`.
 """
-macro threaded(backend, expr)
-    # Reverse-engineer the for loop.
-    # `expr.args[1]` is the head of the for loop, like `i = eachindex(x)`.
-    # So, `expr.args[1].args[2]` is the iterator `eachindex(x)`
-    # and `expr.args[1].args[1]` is the loop variable `i`.
-    iterator = expr.args[1].args[2]
-    i = expr.args[1].args[1]
-    inner_loop = expr.args[2]
+macro par(backend, expr)
+    expr.head != :for && error("@par can only be used with for loops")
+    iter = expr.args[1]
+    iter.head != :(=) && error("@par can only be used with for loops of the form `for i in iterator`")
 
-    # Assemble the `for` loop again as a call to `parallel_foreach`, using `$i` to use the
+    body = expr.args[2]
+    induction_var = iter.args[1]
+    iterator = iter.args[2]
+
+
+    # Assemble the `for` loop again as a call to `parallel_foreach`, using `$induction_var` to use the
     # same loop variable as used in the for loop.
-    return esc(quote
-                   PointNeighbors.parallel_foreach($iterator, $backend) do $i
-                       $inner_loop
-                   end
-               end)
+    expr = quote 
+        $parallel_foreach($iterator, $backend) do $induction_var
+            $body
+        end
+    end
+
+    return esc(expr)
 end
 
 # Serial loop
-@inline function parallel_foreach(f, iterator, ::SerialBackend)
+@inline function parallel_foreach(f::F, iterator, ::SerialBackend) where F
     for i in iterator
         @inline f(i)
     end
 end
 
 # Use `Polyester.@batch`
-@inline function parallel_foreach(f, iterator, ::PolyesterBackend)
+@inline function parallel_foreach(f::F, iterator, ::PolyesterBackend) where F
     Polyester.@batch for i in iterator
         @inline f(i)
     end
 end
 
 # Use `Threads.@threads :dynamic`
-@inline function parallel_foreach(f, iterator, ::ThreadsDynamicBackend)
+@inline function parallel_foreach(f::F, iterator, ::ThreadsDynamicBackend) where F
     Threads.@threads :dynamic for i in iterator
         @inline f(i)
     end
 end
 
 # Use `Threads.@threads :static`
-@inline function parallel_foreach(f, iterator, ::ThreadsStaticBackend)
+@inline function parallel_foreach(f::F, iterator, ::ThreadsStaticBackend) where F
     Threads.@threads :static for i in iterator
         @inline f(i)
     end
 end
 
 # On GPUs, execute `f` inside a GPU kernel with KernelAbstractions.jl
-@inline function parallel_foreach(f, iterator, backend::KernelAbstractions.Backend)
+@inline function parallel_foreach(f::F, iterator, backend::KernelAbstractions.Backend) where F
     # On the GPU, we can only loop over `1:N`. Therefore, we loop over `1:length(iterator)`
     # and index with `iterator[eachindex(iterator)[i]]`.
     # Note that this only works with vector-like iterators that support arbitrary indexing.
@@ -166,10 +137,9 @@ end
     generic_kernel(backend)(ndrange = ndrange) do i
         @inbounds @inline f(iterator[indices[i]])
     end
-
-    KernelAbstractions.synchronize(backend)
 end
 
+# TODO: We could also use the slightly more optimized version from AcceleratedKernels
 @kernel function generic_kernel(f)
     i = @index(Global)
     @inline f(i)
