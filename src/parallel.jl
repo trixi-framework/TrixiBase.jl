@@ -3,6 +3,10 @@ using Polyester: Polyester
 using Base.Threads: Threads
 using GPUArraysCore: AbstractGPUArray
 
+##
+# Original approach formulated by @efaulhaber in PointNeighbors.jl
+##
+
 abstract type AbstractThreadingBackend end
 
 """
