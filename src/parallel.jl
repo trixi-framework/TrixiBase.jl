@@ -63,16 +63,16 @@ Possible parallelization backends are:
 macro par(backend, expr)
     expr.head != :for && error("@par can only be used with for loops")
     iter = expr.args[1]
-    iter.head != :(=) && error("@par can only be used with for loops of the form `for i in iterator`")
+    iter.head != :(=) &&
+        error("@par can only be used with for loops of the form `for i in iterator`")
 
     body = expr.args[2]
     induction_var = iter.args[1]
     iterator = iter.args[2]
 
-
     # Assemble the `for` loop again as a call to `parallel_foreach`, using `$induction_var` to use the
     # same loop variable as used in the for loop.
-    expr = quote 
+    expr = quote
         $parallel_foreach($iterator, $backend) do $induction_var
             $body
         end
@@ -82,28 +82,29 @@ macro par(backend, expr)
 end
 
 # Serial loop
-@inline function parallel_foreach(f::F, iterator, ::SerialBackend) where F
+@inline function parallel_foreach(f::F, iterator, ::SerialBackend) where {F}
     for i in iterator
         @inline f(i)
     end
 end
 
 # Use `Threads.@threads :dynamic`
-@inline function parallel_foreach(f::F, iterator, ::ThreadsDynamicBackend) where F
+@inline function parallel_foreach(f::F, iterator, ::ThreadsDynamicBackend) where {F}
     Threads.@threads :dynamic for i in iterator
         @inline f(i)
     end
 end
 
 # Use `Threads.@threads :static`
-@inline function parallel_foreach(f::F, iterator, ::ThreadsStaticBackend) where F
+@inline function parallel_foreach(f::F, iterator, ::ThreadsStaticBackend) where {F}
     Threads.@threads :static for i in iterator
         @inline f(i)
     end
 end
 
 # On GPUs, execute `f` inside a GPU kernel with KernelAbstractions.jl
-@inline function parallel_foreach(f::F, iterator, backend::KernelAbstractions.Backend) where F
+@inline function parallel_foreach(f::F, iterator,
+                                  backend::KernelAbstractions.Backend) where {F}
     # On the GPU, we can only loop over `1:N`. Therefore, we loop over `1:length(iterator)`
     # and index with `iterator[eachindex(iterator)[i]]`.
     # Note that this only works with vector-like iterators that support arbitrary indexing.
