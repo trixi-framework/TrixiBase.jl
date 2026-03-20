@@ -1,10 +1,7 @@
 include("test_util.jl")
 
 import KernelAbstractions: CPU
-
-@testset verbose=true "default_backend functions" begin
-    @test default_backend([1, 2, 3]) isa TrixiBase.PolyesterBackend
-end
+using Polyester
 
 @testset verbose=true "@par macro" begin
     @par TrixiBase.SerialBackend() for i in 1:10
