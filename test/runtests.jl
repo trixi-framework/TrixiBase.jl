@@ -6,4 +6,5 @@ include("test_util.jl")
     run(`$(mpiexec()) -n 2 $(Base.julia_cmd()) --threads=1 $(abspath("test_mpi.jl"))`)
     include("trixi_include.jl")
     include("test_timers.jl")
+    include("test_parallel.jl")
 end;
