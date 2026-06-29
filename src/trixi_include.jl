@@ -32,6 +32,11 @@ an assignment for a passed keyword argument is not found in `elixir`, an error i
 If `replace_assignments_recursive` is `true` and `elixir` contains calls to `trixi_include`
 itself, a warning is issued instead of an error.
 
+!!! warning
+    `trixi_include` uses `Main` as the default module to evaluate the included code in.
+    For usages inside a `testset` or for notebooks like Pluto.jl, you may want to explicitly
+    pass `@__MODULE__` to `trixi_include` to evaluate the code in the current module instead of `Main`.
+
 # Examples
 
 ```@example
