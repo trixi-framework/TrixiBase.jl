@@ -13,7 +13,7 @@
          ─────────────────  ─────────────────    ──────────────────
          Section    ncalls  time  %tot  avg      alloc  %tot  avg
         ────────────────────────────────────────────────────────────
-        
+
         """
         # Remove "Tot / % measured" line and trailing white spaces
         expected = replace(timer_output, r"Tot / % measured: .*" => "",
@@ -43,7 +43,7 @@
         ────────────────────────────────────────────────────────────────────────────────────────────
          test timer       2  19.8μs  100.0%  9.89μs  ████████       752B  100.0%     376B  ████████
         ────────────────────────────────────────────────────────────────────────────────────────────
-        
+
         """
         # Remove "Tot / % measured" line and trailing white spaces and replace
         # the "test timer" line (but don't remove it, we want to check that it's there).
@@ -85,7 +85,7 @@
         ──────────────────────────────────────────────────────────────────────────────────────────────
          test timer 2       1  22.5μs  100.0%  22.5μs  ████████       704B  100.0%     704B  ████████
         ──────────────────────────────────────────────────────────────────────────────────────────────
-        
+
         """
         # Remove "Tot / % measured" line and trailing white spaces and replace
         # the "test timer 2" line (but don't remove it, we want to check that it's there).
@@ -127,7 +127,7 @@
         ──────────────────────────────────────────────────────────────────────────────────────────────
          test timer 2       1  22.5μs  100.0%  22.5μs  ████████       704B  100.0%     704B  ████████
         ──────────────────────────────────────────────────────────────────────────────────────────────
-        
+
         """
         # Remove "Tot / % measured" line and trailing white spaces and replace
         # the "test timer 2" line (but don't remove it, we want to check that it's there).
