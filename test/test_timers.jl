@@ -6,14 +6,14 @@
         TrixiBase.TimerOutputs.reset_timer!(timer())
 
         timer_output = """
-        ────────────────────────────────────────────────────────────────────
-                                   Time                    Allocations
-                          ───────────────────────   ────────────────────────
-        Tot / % measured:      91.5s /   0.0%           5.43MiB /   0.0%
+        ────────────────────────────────────────────────────────────
+                                  Time              Allocations
+                            ─────────────────    ──────────────────
+         Tot / % measured:    4.36ms / 0.0%        185KiB / 0.0%
+         ─────────────────  ─────────────────    ──────────────────
+         Section    ncalls  time  %tot  avg      alloc  %tot  avg
+        ────────────────────────────────────────────────────────────
 
-        Section   ncalls     time    %tot     avg     alloc    %tot      avg
-        ────────────────────────────────────────────────────────────────────
-        ────────────────────────────────────────────────────────────────────
         """
         # Remove "Tot / % measured" line and trailing white spaces
         expected = replace(timer_output, r"Tot / % measured: .*" => "",
@@ -34,26 +34,27 @@
         @trixi_timeit timer() "test timer" sin(0.0)
 
         timer_output = """
-        ───────────────────────────────────────────────────────────────────────
-                                      Time                    Allocations
-                             ───────────────────────   ────────────────────────
-          Tot / % measured:      61.4ms /  99.2%           5.60MiB /  99.6%
+        ────────────────────────────────────────────────────────────────────────────────────────────
+                                           Time                             Allocations
+                             ────────────────────────────────    ──────────────────────────────────
+         Tot / % measured:            23.7ms / 0.1%                        55.6KiB / 1.3%
+         ──────────────────  ────────────────────────────────    ──────────────────────────────────
+         Section     ncalls    time    %tot     avg                alloc    %tot      avg
+        ────────────────────────────────────────────────────────────────────────────────────────────
+         test timer       2  19.8μs  100.0%  9.89μs  ████████       752B  100.0%     376B  ████████
+        ────────────────────────────────────────────────────────────────────────────────────────────
 
-        Section      ncalls     time    %tot     avg     alloc    %tot      avg
-        ───────────────────────────────────────────────────────────────────────
-        test timer        2   60.9ms  100.0%  60.9ms   5.57MiB  100.0%  5.57MiB
-        ───────────────────────────────────────────────────────────────────────
         """
         # Remove "Tot / % measured" line and trailing white spaces and replace
         # the "test timer" line (but don't remove it, we want to check that it's there).
         expected = replace(timer_output, r"Tot / % measured: .*" => "",
-                           r"\s+\n" => "\n",
-                           r"test timer        2 .*B\n" => "test timer        2")
+                           r"test timer\s+2\s.*" => "test timer 2",
+                           r"\s+\n" => "\n")
         actual = replace(repr(timer()) * "\n", r"Tot / % measured: .*" => "",
-                         r"\s+\n" => "\n",
-                         r"test timer        2 .*B\n" => "test timer        2")
+                         r"test timer\s+2\s.*" => "test timer 2",
+                         r"\s+\n" => "\n")
 
-        # Compare against empty timer output
+        # Compare against expected timer output
         @test actual == expected
     end
 
@@ -75,26 +76,27 @@
         @trixi_timeit timer() "test timer 2" sin(0.0)
 
         timer_output = """
-        ─────────────────────────────────────────────────────────────────────────
-                                        Time                    Allocations
-                               ───────────────────────   ────────────────────────
-           Tot / % measured:       23.7ms /   0.0%           1.00MiB /   0.0%
+        ──────────────────────────────────────────────────────────────────────────────────────────────
+                                             Time                             Allocations
+                               ────────────────────────────────    ──────────────────────────────────
+          Tot / % measured:             56.7ms / 0.0%                        3.20MiB / 0.0%
+         ────────────────────  ────────────────────────────────    ──────────────────────────────────
+         Section       ncalls    time    %tot     avg                alloc    %tot      avg
+        ──────────────────────────────────────────────────────────────────────────────────────────────
+         test timer 2       1  22.5μs  100.0%  22.5μs  ████████       704B  100.0%     704B  ████████
+        ──────────────────────────────────────────────────────────────────────────────────────────────
 
-        Section        ncalls     time    %tot     avg     alloc    %tot      avg
-        ─────────────────────────────────────────────────────────────────────────
-        test timer 2        1    875ns  100.0%   875ns     48.0B  100.0%    48.0B
-        ─────────────────────────────────────────────────────────────────────────
         """
         # Remove "Tot / % measured" line and trailing white spaces and replace
-        # the "test timer" line (but don't remove it, we want to check that it's there).
+        # the "test timer 2" line (but don't remove it, we want to check that it's there).
         expected = replace(timer_output, r"Tot / % measured: .*" => "",
-                           r"\s+\n" => "\n",
-                           r"test timer 2        1 .*B\n" => "test timer 2        1")
+                           r"test timer 2\s+1\s.*" => "test timer 2",
+                           r"\s+\n" => "\n")
         actual = replace(repr(timer()) * "\n", r"Tot / % measured: .*" => "",
-                         r"\s+\n" => "\n",
-                         r"test timer 2        1 .*B\n" => "test timer 2        1")
+                         r"test timer 2\s+1\s.*" => "test timer 2",
+                         r"\s+\n" => "\n")
 
-        # Compare against empty timer output
+        # Compare against expected timer output
         @test actual == expected
     end
 
@@ -116,26 +118,27 @@
         @trixi_timeit timer() "test timer 2" sin(0.0)
 
         timer_output = """
-        ─────────────────────────────────────────────────────────────────────────
-                                        Time                    Allocations
-                               ───────────────────────   ────────────────────────
-           Tot / % measured:       23.7ms /   0.0%           1.00MiB /   0.0%
+        ──────────────────────────────────────────────────────────────────────────────────────────────
+                                             Time                             Allocations
+                               ────────────────────────────────    ──────────────────────────────────
+          Tot / % measured:             56.7ms / 0.0%                        3.20MiB / 0.0%
+         ────────────────────  ────────────────────────────────    ──────────────────────────────────
+         Section       ncalls    time    %tot     avg                alloc    %tot      avg
+        ──────────────────────────────────────────────────────────────────────────────────────────────
+         test timer 2       1  22.5μs  100.0%  22.5μs  ████████       704B  100.0%     704B  ████████
+        ──────────────────────────────────────────────────────────────────────────────────────────────
 
-        Section        ncalls     time    %tot     avg     alloc    %tot      avg
-        ─────────────────────────────────────────────────────────────────────────
-        test timer 2        1    875ns  100.0%   875ns     48.0B  100.0%    48.0B
-        ─────────────────────────────────────────────────────────────────────────
         """
         # Remove "Tot / % measured" line and trailing white spaces and replace
-        # the "test timer" line (but don't remove it, we want to check that it's there).
+        # the "test timer 2" line (but don't remove it, we want to check that it's there).
         expected = replace(timer_output, r"Tot / % measured: .*" => "",
-                           r"\s+\n" => "\n",
-                           r"test timer 2        1 .*B\n" => "test timer 2        1")
+                           r"test timer 2\s+1\s.*" => "test timer 2",
+                           r"\s+\n" => "\n")
         actual = replace(repr(timer()) * "\n", r"Tot / % measured: .*" => "",
-                         r"\s+\n" => "\n",
-                         r"test timer 2        1 .*B\n" => "test timer 2        1")
+                         r"test timer 2\s+1\s.*" => "test timer 2",
+                         r"\s+\n" => "\n")
 
-        # Compare against empty timer output
+        # Compare against expected timer output
         @test actual == expected
     end
 end;

@@ -59,14 +59,15 @@ macro trixi_timeit(timer_output, label, expr)
                 local accumulated_data = $(TimerOutputs.push!)(to, $(esc(label)))
             else
                 # dummy to avoid issues with JET.jl complaining about potentially undefined variables
-                local accumulated_data = TimerOutputs.TimeData()
+                local accumulated_data = $(TimerOutputs.Section)("")
             end
+            local gc0 = $(TimerOutputs.gc_time)()
             local b0 = $(TimerOutputs.gc_bytes)()
             local t0 = $(TimerOutputs.time_ns)()
         end
         local val = $(esc(expr))
         if timeit_debug_enabled() && enabled
-            $(TimerOutputs.do_accumulate!)(accumulated_data, t0, b0)
+            $(TimerOutputs.do_accumulate!)(accumulated_data, t0, b0, gc0)
             $(TimerOutputs.pop!)(to)
         end
         val
