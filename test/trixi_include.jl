@@ -205,6 +205,20 @@
                     @test y == 20 # Overridden from nested file
                     @test z == 30 # Overridden from top file
                 end
+
+                # Test a Symbol override that is only assigned in the nested file.
+                # This covers the branch where missing kwargs are injected
+                # into the nested `trixi_include` call.
+                @test_warn "assignments" trixi_include(@__MODULE__, path2;
+                                                       x = :symbol,
+                                                       replace_assignments_recursive = true)
+                if VERSION >= v"1.12"
+                    mod = @__MODULE__
+                    @test (@invokelatest mod.x) === :symbol
+                else
+                    @test x === :symbol
+                end
+
                 # Test that kwargs are NOT passed recursively
                 @trixi_test_nowarn trixi_include(@__MODULE__, path2;
                                                  x = 10, y = 20, z = 30,
