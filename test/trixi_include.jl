@@ -29,6 +29,15 @@
                 @test x == 7
             end
 
+            @trixi_test_nowarn trixi_include(@__MODULE__, path, x = :symbol)
+
+            if VERSION >= v"1.12"
+                mod = @__MODULE__
+                @test (@invokelatest mod.x) === :symbol
+            else
+                @test x === :symbol
+            end
+
             # Verify default version (that includes in `Main`)
             @trixi_test_nowarn trixi_include(path, x = 11)
             if VERSION >= v"1.12"
