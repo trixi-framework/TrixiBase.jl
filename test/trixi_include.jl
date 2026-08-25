@@ -278,6 +278,16 @@
                     @test a == 500  # Top-level override wins over nested explicit kwarg
                     @test b == 600  # Passed through to nested file
                 end
+
+                # Test overwriting an existing nested kwarg with a Symbol.
+                @trixi_test_nowarn trixi_include(@__MODULE__, path4; a = :symbol,
+                                                 replace_assignments_recursive = true)
+                if VERSION >= v"1.12"
+                    mod = @__MODULE__
+                    @test (@invokelatest mod.a) === :symbol
+                else
+                    @test a === :symbol
+                end
             end
         end
 
