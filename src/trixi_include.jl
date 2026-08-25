@@ -200,9 +200,7 @@ function replace_assignments(expr, recursive = false; kwargs...)
             for (key, val) in kwargs
                 if (x.head === Symbol("=") || x.head === :kw) &&
                    x.args[1] === Symbol(key)
-                    # Symbols need to be quoted so that they are evaluated as values instead
-                    # of variable names in the included file.
-                    x.args[2] = val isa Symbol ? QuoteNode(val) : val
+                    x.args[2] = :($val)
                     # dump(x)
                 end
             end
@@ -244,8 +242,7 @@ function replace_assignments(expr, recursive = false; kwargs...)
                 # `x = ...` in the file, which will also be replaced in the loop above.
                 for (key, val) in kwargs
                     if !(Symbol(key) in existing_kwargs)
-                        value = val isa Symbol ? QuoteNode(val) : val
-                        push!(x.args, Expr(:kw, Symbol(key), value))
+                        push!(x.args, Expr(:kw, Symbol(key), val))
                     end
                 end
             end

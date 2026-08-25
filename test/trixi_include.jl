@@ -29,15 +29,6 @@
                 @test x == 7
             end
 
-            @trixi_test_nowarn trixi_include(@__MODULE__, path, x = :symbol)
-
-            if VERSION >= v"1.12"
-                mod = @__MODULE__
-                @test (@invokelatest mod.x) === :symbol
-            else
-                @test x === :symbol
-            end
-
             # Verify default version (that includes in `Main`)
             @trixi_test_nowarn trixi_include(path, x = 11)
             if VERSION >= v"1.12"
@@ -205,20 +196,6 @@
                     @test y == 20 # Overridden from nested file
                     @test z == 30 # Overridden from top file
                 end
-
-                # Test a Symbol override that is only assigned in the nested file.
-                # This covers the branch where missing kwargs are injected
-                # into the nested `trixi_include` call.
-                @test_warn "assignments" trixi_include(@__MODULE__, path2;
-                                                       x = :symbol,
-                                                       replace_assignments_recursive = true)
-                if VERSION >= v"1.12"
-                    mod = @__MODULE__
-                    @test (@invokelatest mod.x) === :symbol
-                else
-                    @test x === :symbol
-                end
-
                 # Test that kwargs are NOT passed recursively
                 @trixi_test_nowarn trixi_include(@__MODULE__, path2;
                                                  x = 10, y = 20, z = 30,
@@ -277,16 +254,6 @@
                     @test @isdefined b
                     @test a == 500  # Top-level override wins over nested explicit kwarg
                     @test b == 600  # Passed through to nested file
-                end
-
-                # Test overwriting an existing nested kwarg with a Symbol.
-                @trixi_test_nowarn trixi_include(@__MODULE__, path4; a = :symbol,
-                                                 replace_assignments_recursive = true)
-                if VERSION >= v"1.12"
-                    mod = @__MODULE__
-                    @test (@invokelatest mod.a) === :symbol
-                else
-                    @test a === :symbol
                 end
             end
         end
