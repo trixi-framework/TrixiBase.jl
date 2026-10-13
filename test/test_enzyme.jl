@@ -1,4 +1,4 @@
-using Enzyme: Enzyme, Active, Duplicated, Reverse, autodiff
+using Enzyme: Enzyme, Active, BatchDuplicated, Const, Duplicated, Reverse, autodiff
 
 @testset verbose=true "`@trixi_timeit` with Enzyme.jl" begin
     function inner_timed!(y, x)
@@ -32,4 +32,23 @@ using Enzyme: Enzyme, Active, Duplicated, Reverse, autodiff
     @test to["outer"]["inner"].ncalls == 3
     @test to["outer (reverse)"].ncalls == 1
     @test to["outer (reverse)"]["inner (reverse)"].ncalls == 3
+
+    # A section with no differentiable code in it
+    function inactive_timed(x, n)
+        s = @trixi_timeit timer() "inactive" sum(1:n)
+        return x^2 + s
+    end
+    TrixiBase.TimerOutputs.reset_timer!(timer())
+    @test autodiff(Reverse, inactive_timed, Active, Active(3.0), Const(3))[1][1] == 6.0
+    @test timer()["inactive"].ncalls == 1
+    @test timer()["inactive (reverse)"].ncalls == 1
+
+    # Batch mode
+    TrixiBase.TimerOutputs.reset_timer!(timer())
+    dxs = (zero(x), zero(x))
+    autodiff(Reverse, inner_timed!, Const, BatchDuplicated(y, (ones(3), 2 .* ones(3))),
+             BatchDuplicated(x, dxs))
+    @test dxs == (2 .* x, 4 .* x)
+    @test timer()["inner"].ncalls == 1
+    @test timer()["inner (reverse)"].ncalls == 1
 end
