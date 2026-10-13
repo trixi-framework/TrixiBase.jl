@@ -63,6 +63,22 @@ macro trixi_timeit(timer_output, label, expr)
     end
 end
 
+# The state that `timeit_begin` gives to `timeit_end`
+struct TimeitState{G, B, T}
+    enabled::Bool
+    accumulated_data::TimerOutputs.Section
+    gc0::G
+    b0::B
+    t0::T
+    # Only for automatic differentiation: a box that the reverse pass of `timeit_end` puts
+    # the state of the reverse section into, for the reverse pass of `timeit_begin`.
+    # The primal code sets it to `nothing` and does not allocate it.
+    # The box type must not refer to `TimeitState`, because Julia does not store
+    # self-referential structs inline and Enzyme.jl does not support them as arguments
+    # of rules.
+    reverse::Union{Nothing, Base.RefValue{Any}}
+end
+
 # The two halves of `@trixi_timeit`. They are separate functions so that automatic
 # differentiation tools can attach rules to them, e.g., to time the reverse pass of
 # Enzyme.jl (see the `TrixiBaseEnzymeCoreExt` extension).
@@ -83,7 +99,7 @@ Open the section `label` of the timer `to` and return the state that
     gc0 = TimerOutputs.gc_time()
     b0 = TimerOutputs.gc_bytes()
     t0 = TimerOutputs.time_ns()
-    return (; enabled, accumulated_data, gc0, b0, t0)
+    return TimeitState(enabled, accumulated_data, gc0, b0, t0, nothing)
 end
 
 """

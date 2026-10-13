@@ -9,7 +9,10 @@ using Enzyme: Enzyme, Active, Duplicated, Reverse, autodiff
     end
     function outer_timed(y, x)
         @trixi_timeit timer() "outer" begin
-            inner_timed!(y, x)
+            # Several sections with the same label must not share their reverse states
+            for _ in 1:3
+                inner_timed!(y, x)
+            end
             s = sum(y)
         end
         return s
@@ -26,8 +29,7 @@ using Enzyme: Enzyme, Active, Duplicated, Reverse, autodiff
     # sections "label (reverse)", which nest like the forward ones
     to = timer()
     @test to["outer"].ncalls == 1
-    @test to["outer"]["inner"].ncalls == 1
+    @test to["outer"]["inner"].ncalls == 3
     @test to["outer (reverse)"].ncalls == 1
-    @test to["outer (reverse)"]["inner (reverse)"].ncalls == 1
-    @test isempty(Base.get_extension(TrixiBase, :TrixiBaseEnzymeCoreExt).REVERSE_STATES)
+    @test to["outer (reverse)"]["inner (reverse)"].ncalls == 3
 end
