@@ -53,23 +53,50 @@ See also [`disable_debug_timings`](@ref), [`enable_debug_timings`](@ref).
 macro trixi_timeit(timer_output, label, expr)
     timeit_block = quote
         if timeit_debug_enabled()
-            local to = $(esc(timer_output))
-            local enabled = to.enabled
-            if enabled
-                local accumulated_data = $(TimerOutputs.push!)(to, $(esc(label)))
-            else
-                # dummy to avoid issues with JET.jl complaining about potentially undefined variables
-                local accumulated_data = $(TimerOutputs.Section)("")
-            end
-            local gc0 = $(TimerOutputs.gc_time)()
-            local b0 = $(TimerOutputs.gc_bytes)()
-            local t0 = $(TimerOutputs.time_ns)()
+            local state = $(timeit_begin)($(esc(timer_output)), $(esc(label)))
         end
         local val = $(esc(expr))
-        if timeit_debug_enabled() && enabled
-            $(TimerOutputs.do_accumulate!)(accumulated_data, t0, b0, gc0)
-            $(TimerOutputs.pop!)(to)
+        if timeit_debug_enabled()
+            $(timeit_end)($(esc(timer_output)), $(esc(label)), state)
         end
         val
     end
+end
+
+# The two halves of `@trixi_timeit`. They are separate functions so that automatic
+# differentiation tools can attach rules to them, e.g., to time the reverse pass of
+# Enzyme.jl (see the `TrixiBaseEnzymeCoreExt` extension).
+"""
+    TrixiBase.timeit_begin(to::TimerOutput, label)
+
+Open the section `label` of the timer `to` and return the state that
+[`TrixiBase.timeit_end`](@ref) needs to close it. Used by [`@trixi_timeit`](@ref).
+"""
+@inline function timeit_begin(to, label)
+    enabled = to.enabled
+    if enabled
+        accumulated_data = TimerOutputs.push!(to, label)
+    else
+        # dummy to avoid issues with JET.jl complaining about potentially undefined variables
+        accumulated_data = TimerOutputs.Section("")
+    end
+    gc0 = TimerOutputs.gc_time()
+    b0 = TimerOutputs.gc_bytes()
+    t0 = TimerOutputs.time_ns()
+    return (; enabled, accumulated_data, gc0, b0, t0)
+end
+
+"""
+    TrixiBase.timeit_end(to::TimerOutput, label, state)
+
+Close the section `label` of the timer `to` opened by [`TrixiBase.timeit_begin`](@ref),
+which returned `state`. Used by [`@trixi_timeit`](@ref).
+"""
+@inline function timeit_end(to, label, state)
+    (; enabled, accumulated_data, gc0, b0, t0) = state
+    if enabled
+        TimerOutputs.do_accumulate!(accumulated_data, t0, b0, gc0)
+        TimerOutputs.pop!(to)
+    end
+    return nothing
 end
